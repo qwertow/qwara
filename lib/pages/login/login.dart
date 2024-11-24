@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:qwara/api/user/user.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -15,17 +16,23 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // backgroundColor: Colors.blue,
       appBar: AppBar(title: const Text('登录')),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              width: 100,
-              height: 100,
-              color: Colors.red,
-              margin: const EdgeInsets.only(bottom: 16.0) ,
+              margin: const EdgeInsets.only(bottom: 16.0),
+              decoration: const BoxDecoration(
+                borderRadius: BorderRadius.all(Radius.circular(10)),
+                color: Colors.black,
+              ),
+              child: Image.asset('assets/images/iwaraLogo.png',
+                width: 100, height: 100,
+                // color: Colors.black,
+              ),
             ),
             TextField(
               controller: _emailController,
@@ -62,11 +69,13 @@ class _LoginPageState extends State<LoginPage> {
                 fixedSize: WidgetStateProperty.all(const Size(330, 50)),
                 backgroundColor: WidgetStateProperty.all(Colors.blue),
               ),
-              onPressed: () {
+              onPressed: () async {
                 // 在这里处理登录逻辑
                 String email = _emailController.text;
                 String password = _passwordController.text;
                 // 进行验证以及后续操作
+                await login(username: email, password:password);
+                await getAccessToken();
                 print('邮箱: $email, 密码: $password');
               },
               child: const Text('登录', style: TextStyle(color: Colors.black)),

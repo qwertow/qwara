@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:qwara/api/video/video.dart';
 import 'package:qwara/components/VideoList.dart';
+import 'package:qwara/api/user/user.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -17,11 +18,14 @@ class _HomeState extends State<Home> with AutomaticKeepAliveClientMixin {
   late bool videoListLoadings=false;
 
   getData() async {
+    if(storeController.token==""){
+      return;
+    }
     setState(() {
       videoListLoadings=true;
     });
-    Map res=await getVideoList(
-      sort: "trending",
+    await getUserInfo();
+    Map res=await getSubscribedVideos(
       page: currentPage-1,
     );
     setState(() {
@@ -40,6 +44,7 @@ class _HomeState extends State<Home> with AutomaticKeepAliveClientMixin {
   @override
   void initState() {
     super.initState();
+
     getData();
   }
 

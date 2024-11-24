@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:qwara/EventBus/EventBus.dart';
-import 'package:qwara/videoDetail/ControlMask.dart';
+import 'package:qwara/pages/videoDetail/ControlMask.dart';
 import 'package:video_player/video_player.dart';
 import 'package:flutter/services.dart';
 
-import '../enum/Enum.dart';
+import 'package:qwara/enum/Enum.dart';
 
 
 class FullScreen extends StatefulWidget {

@@ -42,7 +42,7 @@ Future<List> getVideoUrls(String filrUrl)async {
   return response.data;
 }
 //获取订阅视频
-Future<Map> getSubscribedVideos({required String sort, required int page, String rating = 'ecchi'})async {
+Future<Map> getSubscribedVideos({ required int page, String rating = 'ecchi'})async {
   print('getSubscribedVideos');
   final response=await dio.get(
       'https://api.iwara.tv/videos',

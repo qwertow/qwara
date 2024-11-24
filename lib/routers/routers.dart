@@ -1,14 +1,14 @@
 
 import 'package:flutter/material.dart';
-import 'package:qwara/login/login.dart';
-import 'package:qwara/videoDetail/videoDetail.dart';
+import 'package:qwara/pages/login/login.dart';
+import 'package:qwara/pages/videoDetail/videoDetail.dart';
 
-import '../home/home.dart';
-import '../videosPage//VideosPage.dart';
+import 'package:qwara/pages//home/home.dart';
+import 'package:qwara/pages//videosPage//VideosPage.dart';
 
 final Map routes = {
-  "/home":(context)=>Home(),
-  "/recommend":(context)=>VideosPage(),
+  "/home":(context)=>const Home(),
+  "/recommend":(context)=>const VideosPage(),
   "/detail":(context,{arguments})=>VideoDetail(videoInfo: arguments),
   "/login":(context)=> const LoginPage(),
 };

@@ -6,7 +6,7 @@ import 'package:qwara/EventBus/EventBus.dart';
 import 'package:video_player/video_player.dart';
 import 'package:qwara/getX/StoreController.dart';
 import 'package:get/get.dart';
-import '../videoDetail/ControlMask.dart';
+import 'package:qwara/pages//videoDetail/ControlMask.dart';
 
 
 final storeController = Get.find<StoreController>();

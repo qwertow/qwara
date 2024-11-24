@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:qwara/components/ListItem.dart';
 import 'package:qwara/components/MyCard.dart';
+import 'package:get/get.dart' hide Response;
+
+import '../getX/StoreController.dart';
+
+final storeController = Get.find<StoreController>();
 
 class DrawerView extends StatefulWidget {
   const DrawerView({super.key,this.url});
@@ -11,15 +16,16 @@ class DrawerView extends StatefulWidget {
 
 class _DrawerView extends State<DrawerView> {
 
+  final Map<String,dynamic> _userInfo=storeController.userInfo;
 
   @override
   Widget build(BuildContext context) {
     return ListView(
-      children: const [
+      children: [
         MyCard(
-          title: "qwara",
-          subtitle: "@12123",
-          children: [
+          title: _userInfo['user']?['name'] ?? '未登录',
+          subtitle: "@${_userInfo['user']?['name'] ?? '未登录'}",
+          children: const [
             Row(
               children: [
                 Expanded(
@@ -45,23 +51,23 @@ class _DrawerView extends State<DrawerView> {
           ],
         ),
         // const SizedBox(height: 10),
-        ListItem(
+        const ListItem(
           lead: Icon(Icons.favorite_border),
           text: Text("最爱"),
         ),
-        ListItem(
+        const ListItem(
           lead: Icon(Icons.video_library_outlined),
           text: Text("播单"),
         ),
-        ListItem(
+        const ListItem(
           lead: Icon(Icons.download_outlined),
           text: Text("下载"),
         ),
-        ListItem(
+        const ListItem(
           lead: Icon(Icons.history_outlined),
           text: Text("历史"),
         ),
-        ListItem(
+        const ListItem(
           lead: Icon(Icons.settings_outlined),
           text: Text("设置"),
         )

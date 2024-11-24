@@ -7,7 +7,7 @@ import 'package:qwara/enum/Enum.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:r_album/r_album.dart';
 
-import '../utils/dioRequest.dart';
+import 'package:qwara/utils/dioRequest.dart';
 
 class Profile extends StatefulWidget {
   const Profile({super.key,
@@ -28,6 +28,7 @@ class Profile extends StatefulWidget {
 }
 
 class _ProfileState extends State<Profile> {
+  final Map<String, dynamic> _userInfo = storeController.userInfo;
   bool downloadSccuess = false;
   void _downSccuessCallback() {
 

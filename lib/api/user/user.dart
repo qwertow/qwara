@@ -10,12 +10,32 @@ Future<void> login({required String username, required String password}) async {
     'password': password
   });
   storeController.setToken(response.data['token']);
-  // return response.data;
+
+  return ;
 }
 
 Future<void> getAccessToken() async {
+  dio.options.headers['Authorization'] = 'Bearer ${storeController.token}';
   final response = await dio.post('/user/token');
   storeController.setAccessToken(response.data['accessToken']);
-  // return response.data["accessToken"];
+  Get.offAllNamed('/home');
+  return ;
+}
+
+Future<void> getUserInfo() async {
+  // print(storeController.token);
+  // print(storeController.accessToken);
+  // dio.options.headers['Authorization'] = 'Bearer ${storeController.accessToken}';
+  final response = await dio.get('/user');
+  print(storeController.token);
+  print(storeController.accessToken);
+  print(response.data);
+  storeController.setUserInfo(response.data);
+  return ;
+}
+
+Future<void> logout() async {
+  storeController.setToken('');
+  return ;
 }
 

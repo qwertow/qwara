@@ -16,4 +16,7 @@ class StoreController extends GetxController {
 
   Clarity get clarityStorage => box.read(CLARITY_KEY) ?? Clarity.low;
   void setClarity(Clarity value) => box.write(CLARITY_KEY, value);
+
+  Map<String, dynamic> get userInfo => box.read(USER_INFO_KEY)?? {};
+  void setUserInfo(Map<String, dynamic> value) => box.write(USER_INFO_KEY, value);
 }
