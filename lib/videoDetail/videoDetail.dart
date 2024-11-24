@@ -1,18 +1,20 @@
 import 'dart:convert';
 import 'package:flutter/services.dart';
-import 'package:qwara/utils/request.dart';
+import 'package:qwara/getX/StoreController.dart';
+import 'package:qwara/utils/dioRequest.dart';
 import 'package:flutter/material.dart';
 import 'package:qwara/api/video/video.dart';
 import 'package:qwara/components/VideoView.dart';
 import 'package:contained_tab_bar_view/contained_tab_bar_view.dart';
 import 'package:crypto/crypto.dart';
 import 'package:qwara/constant.dart';
-import 'package:marquee/marquee.dart';
 import 'package:qwara/videoDetail/comment.dart';
 import 'package:qwara/videoDetail/profile.dart';
 import 'package:responsive_builder/responsive_builder.dart';
 import 'package:qwara/components/SlidingPanel3Controller.dart';
+import 'package:get/get.dart';
 
+final storeController = Get.find<StoreController>();
 
 class VideoDetail extends StatefulWidget {
   const VideoDetail({
@@ -63,9 +65,9 @@ class _VideoDetail extends State<VideoDetail> {
     return res;
   }
 
+
   @override
   void initState() {
-
     super.initState();
     _getVideoUrls();
   }
@@ -106,6 +108,7 @@ class _VideoDetail extends State<VideoDetail> {
 
   Widget _buildVideoProfile() {
     return Profile(
+      // onDownload: _downloadVideo,
       onAddPlaylist: () {
         slidingPanel3Controller.setPanel3State(Panel3State.CENTER);
       },

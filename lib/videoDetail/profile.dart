@@ -1,14 +1,25 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:qwara/components/SlidingPanel3Controller.dart';
+import 'package:qwara/enum/Enum.dart';
 import 'package:skeletonizer/skeletonizer.dart';
+import 'package:r_album/r_album.dart';
+
+import '../utils/dioRequest.dart';
 
 class Profile extends StatefulWidget {
-  const Profile({super.key, required this.videoInfo, required this.fileUrls, this.onAddPlaylist});
+  const Profile({super.key,
+    required this.videoInfo,
+    required this.fileUrls,
+    this.onAddPlaylist,
+    this.onDownload
+  });
 
   final Map<String, dynamic> videoInfo;
   final List fileUrls;
-  // final Function onDownload;
+  final Future<bool> Function()? onDownload;
   final void Function()? onAddPlaylist;
   // final Function onLIke;
 
@@ -17,11 +28,83 @@ class Profile extends StatefulWidget {
 }
 
 class _ProfileState extends State<Profile> {
+  bool downloadSccuess = false;
+  void _downSccuessCallback() {
+
+  }
+  ///当前进度进度百分比  当前进度/总进度 从0-1
+  double currentProgress =0.0;
+  Future<bool> _downloadVideo(String definition) async {
+
+    return await downLoadFile("https:${widget.fileUrls.firstWhere((element)=>element["name"]==definition)["src"]["download"]}",
+        savePath: await getPhoneLocalPath(),
+        fileName: "${widget.videoInfo['title']}.mp4",
+        receiveProgress: (received, total) {
+          if (total != -1) {
+            ///当前下载的百分比例
+            print((received / total * 100).toStringAsFixed(0) + "%");
+            // CircularProgressIndicator(value: currentProgress,) 进度 0-1
+            currentProgress = received / total;
+            // setState(() {
+            //
+            // });
+          }
+        }
+    );
+  }
   bool isExpanded = false; // 控制展开状态
   SliverPanel3Controller slidingPanel3Controller = SliverPanel3Controller();
   String formatDate(String dateString) {
     DateTime dateTime = DateTime.parse(dateString); // 将日期字符串解析为 DateTime 对象
     return DateFormat('yyyy-MM-dd HH:mm:ss').format(dateTime); // 格式化日期
+  }
+  /// showDialog
+  showDialogFunction(context, Clarity clarity) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          child: SizedBox(
+            height: 200,
+            width: 50,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                const Text("保存到"),
+                TextButton(onPressed: () async {
+                  Navigator.pop(context);
+                  downloadSccuess = await _downloadVideo(clarity.value);
+                  if(downloadSccuess) {
+                    _downSccuessCallback();
+                  }
+                }, child: const Text("下载文件夹")),
+                TextButton(onPressed: () async {
+                  Navigator.pop(context);
+                  downloadSccuess = await _downloadVideo(clarity.value);
+                  if(downloadSccuess) {
+                    String originalFilePath = "${await getPhoneLocalPath()}${widget.videoInfo['title']}.mp4";
+                    bool? createAlbum = await RAlbum.createAlbum("qwara");
+                    if(createAlbum ?? false) {
+                      await RAlbum.saveAlbum(
+                          "qwara", [originalFilePath],["${widget.videoInfo['title']}.mp4"]);
+                      // 删除原始文件
+                      File originalFile = File(originalFilePath);
+                      if (await originalFile.exists()) {
+                        await originalFile.delete();
+                        print("原始文件已删除：$originalFilePath");
+                      } else {
+                        print("文件不存在：$originalFilePath");
+                      }
+                    }
+                    _downSccuessCallback();
+                  }
+                }, child: const Text("相册"))
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
   @override
   Widget build(BuildContext context) {
@@ -81,10 +164,25 @@ class _ProfileState extends State<Profile> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween, // 使子元素之间的空间均分
                     children: [
-                      IconButton(
-                        onPressed: () {},
-                        icon: const Icon(Icons.download),
+                      PopupMenuButton<Clarity>(
+                        offset: const Offset(0, 40),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                          child: const Icon(Icons.download),
+                        ),
+                        onSelected: (clarity) async {
+                          showDialogFunction(context, clarity);
+                        },
+                        itemBuilder: (context) {
+                          return Clarity.values.map((clarity) {
+                            return PopupMenuItem<Clarity>(
+                              value: clarity,
+                              child: Text(clarity.value, style: const TextStyle(color: Colors.black)),
+                            );
+                          }).toList();
+                        },
                       ),
+
                       Row(  // 创建一个新的 Row 包裹分享和收藏按钮
                         children: [
                           IconButton(
@@ -114,9 +212,15 @@ class _ProfileState extends State<Profile> {
             //作者信息
             Card(
                 child: ListTile(
-                  leading: const CircleAvatar(
-                    radius: 20,
-                    backgroundImage: NetworkImage('https://picsum.photos/200'),
+                  leading: CircleAvatar(
+                    radius: 26,
+                    backgroundImage:widget.videoInfo['user'] == null? null : NetworkImage(
+                        'https://i.iwara.tv/image/avatar/${widget.videoInfo['user']?['avatar']['id'] }/${widget.videoInfo['user']?['avatar']['name']}',
+                      headers: {
+                        'Referer':"https://www.iwara.tv/",
+                        // 'Content-Type':'image/jpeg'
+                      }
+                    ),
                   ),
                   title: Text(widget.videoInfo['user']?['name'] ?? '作者名称'),
                   subtitle: Text("@${widget.videoInfo['user']?['username'] ?? '作者用户名'}"),

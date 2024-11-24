@@ -1,6 +1,6 @@
 import 'package:qwara/getX/StoreController.dart';
 import 'package:get/get.dart';
-import 'package:qwara/utils/request.dart';
+import 'package:qwara/utils/dioRequest.dart';
 
 final storeController = Get.find<StoreController>();
 

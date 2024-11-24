@@ -5,6 +5,8 @@ import 'package:qwara/videoDetail/FullScreen.dart';
 import 'package:qwara/getX/StoreController.dart';
 import 'package:get/get.dart';
 
+import '../enum/Enum.dart';
+
 final storeController = Get.find<StoreController>();
 
 class ControlMask extends StatefulWidget{
@@ -26,17 +28,7 @@ class ControlMask extends StatefulWidget{
   State<ControlMask> createState() => _ControlMaskState();
 }
 
-enum Clarity {
-  source("Source"),
-  medium("540"),
-  low("360");
-
-  final String value;
-  const Clarity(this.value);
-
-}
-
-class _ControlMaskState extends State<ControlMask>{
+class _ControlMaskState extends State<ControlMask> with TickerProviderStateMixin{
   late VideoPlayerController _controller;
   late Clarity _clarity=storeController.clarityStorage;
   var buffered;
@@ -155,7 +147,10 @@ class _ControlMaskState extends State<ControlMask>{
                 offset: const Offset(0, 20),
                 color: Colors.transparent,
                 initialValue: _clarity,
-                child: Text(_clarity.value, style: const TextStyle(color: Colors.white)),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10,vertical: 5),
+                  child: Text(_clarity.value, style: const TextStyle(color: Colors.white)),
+                ),
                 onSelected: (clarity) {
                   widget.switchClarity?.call(clarity);
                   setState(() {

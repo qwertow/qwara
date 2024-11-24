@@ -3,24 +3,15 @@ import 'package:qwara/api/video/video.dart';
 import 'package:qwara/components/Mydropdown.dart';
 import 'package:qwara/components/VideoList.dart';
 
+import 'package:qwara/enum/Enum.dart';
+
 class VideosPage extends StatefulWidget {
   const VideosPage({super.key});
 
   @override
   State<VideosPage> createState() => _VideosPageState();
 }
-enum SortType {
-  date("date", "日期"),
-  popularity("popularity", "人气"),
-  trending("trending", "流行"),
-  view("views", "观看"),
-  like("likes", "喜欢");
 
-  final String value;   // 英文参数
-  final String label;   // 中文标签
-
-  const SortType(this.value, this.label);
-}
 
 class _VideosPageState extends State<VideosPage> with AutomaticKeepAliveClientMixin {
   late int totalPages=20;

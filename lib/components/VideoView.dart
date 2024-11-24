@@ -2,11 +2,12 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:qwara/EventBus/EventBus.dart';
 import 'package:video_player/video_player.dart';
-import 'package:chewie/chewie.dart';
 import 'package:qwara/getX/StoreController.dart';
 import 'package:get/get.dart';
 import '../videoDetail/ControlMask.dart';
+
 
 final storeController = Get.find<StoreController>();
 
@@ -23,12 +24,11 @@ class VideoView extends StatefulWidget {
 
 class _VideoView extends State<VideoView> {
   List initUrlList = [];
-  String definition = '360';
+  String definition = storeController.clarityStorage.value;
   String? url;
   double? videoWidth;
   double? videoHeight;
   late VideoPlayerController _controller;
-  late ChewieController _chewieController;
   bool showOverlay = false; // 控制遮罩层的显隐
 
   double proportion = 0;
@@ -36,6 +36,7 @@ class _VideoView extends State<VideoView> {
   late Duration dura;
   late Duration total;
   late Duration oldDura;
+  late bool oldIsPlaying;
   // var oldProportion;
 
   @override
@@ -51,14 +52,13 @@ class _VideoView extends State<VideoView> {
     super.didUpdateWidget(oldWidget);
     if (!listEquals(widget.urlList, initUrlList)) {
       // _updateUrl();
-      _loadVideo("https://${widget.urlList.firstWhere((element)=>element["name"]==definition)["src"]["view"]}");
+      _loadVideo();
     }
   }
 
   @override
   void dispose() {
     _controller.dispose();
-    _chewieController.dispose();
     super.dispose();
   }
 
@@ -78,6 +78,14 @@ class _VideoView extends State<VideoView> {
 
     _controller = VideoPlayerController.networkUrl(Uri.parse(link))
       ..initialize().then((_) {
+        if(oldDura.inSeconds!=0){
+          print("seekTo: $oldDura");
+          _controller.seekTo(oldDura);
+          if(oldIsPlaying){
+            _controller.play();
+          }
+          eventBus.fire(ControllerReloadEvent(_controller));
+        }
         setState(() {});
       })..addListener(() {
             setState(() {
@@ -102,9 +110,15 @@ class _VideoView extends State<VideoView> {
   }
 
   //加载视频
-  Future<VideoPlayerController> _loadVideo(String url) async {
+  Future<VideoPlayerController> _loadVideo() async {
+    String url = "";
     if(initUrlList.isEmpty) {
-          initUrlList.addAll(widget.urlList);
+      initUrlList.addAll(widget.urlList);
+    }
+    try{
+      url="https://${widget.urlList.firstWhere((element)=>element["name"]==definition)["src"]["view"]}";
+    }catch(e){
+
     }
     if (!_controller.value.isInitialized) {
       //没有视频在播放
@@ -113,6 +127,7 @@ class _VideoView extends State<VideoView> {
       // 如果有控制器，我们需要先处理旧的
       final VideoPlayerController oldController = _controller;
       oldDura = oldController.value.position;
+      oldIsPlaying = oldController.value.isPlaying;
       // 为下一帧的结束注册回调
       // 处理一个旧控制器
       // (调用setState后不再使用)
@@ -189,10 +204,6 @@ class _VideoView extends State<VideoView> {
   }
 
   Widget _buildVideoPlayer() {
-    if(oldDura.inSeconds!=0){
-      print("seekTo: $oldDura");
-      _controller.seekTo(oldDura);
-    }
     // return SizedBox(
     //   height: widget.height ?? 200,
     //   child: Chewie(
@@ -238,7 +249,7 @@ class _VideoView extends State<VideoView> {
                   definition=clarity.value;
                 });
                 storeController.setClarity(clarity);
-                _loadVideo("https://${widget.urlList.firstWhere((element)=>element["name"]==definition)["src"]["view"]}");
+                _loadVideo();
 
               },
           ),

@@ -1,7 +1,8 @@
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:qwara/constant.dart';
-import 'package:qwara/videoDetail/ControlMask.dart';
+
+import '../enum/Enum.dart';
 
 class StoreController extends GetxController {
   final box = GetStorage();

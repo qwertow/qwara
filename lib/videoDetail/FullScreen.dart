@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:qwara/EventBus/EventBus.dart';
 import 'package:qwara/videoDetail/ControlMask.dart';
 import 'package:video_player/video_player.dart';
 import 'package:flutter/services.dart';
+
+import '../enum/Enum.dart';
+
 
 class FullScreen extends StatefulWidget {
   const FullScreen({
@@ -9,7 +13,7 @@ class FullScreen extends StatefulWidget {
   });
   final VideoPlayerController controller;
   final Function(Clarity clarity)? switchClarity;
-@override
+  @override
   State<FullScreen> createState() => _FullScreenState();
 }
 class _FullScreenState extends State<FullScreen> {
@@ -24,6 +28,7 @@ class _FullScreenState extends State<FullScreen> {
   @override
   void initState() {
     super.initState();
+
     SystemChrome.setPreferredOrientations([
       // DeviceOrientation.portraitUp,
       // DeviceOrientation.portraitDown,
@@ -36,7 +41,12 @@ class _FullScreenState extends State<FullScreen> {
     _controller = widget.controller;
 
     _controller.addListener(listener);
-
+    eventBus.on<ControllerReloadEvent>().listen((event){
+      setState(() {
+        _controller = event.controller;
+      });
+      print("eventBus");
+    });
   }
   bool showOverlay = false; // 控制遮罩层的显隐
 
@@ -84,11 +94,7 @@ class _FullScreenState extends State<FullScreen> {
                         child: VideoPlayer(_controller),
                       ),
                       showOverlay? ControlMask(
-                        switchClarity: (clarity){
-                          setState(() {
-                            _controller=widget.switchClarity?.call(clarity);
-                          });
-                        },
+                        switchClarity: widget.switchClarity,
                         controller: _controller,
                         fullScreen: true,
                         width: MediaQuery.of(context).size.width ,
