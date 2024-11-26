@@ -1,7 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/services.dart';
+import 'package:qwara/api/subscribe/follow.dart';
+import 'package:qwara/api/subscribe/like.dart';
 import 'package:qwara/getX/StoreController.dart';
-import 'package:qwara/utils/dioRequest.dart';
 import 'package:flutter/material.dart';
 import 'package:qwara/api/video/video.dart';
 import 'package:qwara/components/VideoView.dart';
@@ -30,51 +31,193 @@ class VideoDetail extends StatefulWidget {
 
 class _VideoDetail extends State<VideoDetail> {
 
-  SliverPanel3Controller slidingPanel3Controller = SliverPanel3Controller();
+  final GlobalKey<VideoViewState> videoViewKey = GlobalKey<VideoViewState>();
 
-  late Map<String, dynamic> videoDetail={};
-  final List videoUrls=[];
-  _getVideoDetail(String id) async {
-    final res = await getVideoDetail(id);
-    return res;
+  late double? _videoViewHeight=null;
+
+  final ScrollController _profileScrollController = ScrollController();
+  final ScrollController _commentScrollController = ScrollController();
+  late ScrollPhysics? _scrollPhysics = const NeverScrollableScrollPhysics();
+  bool pLisTouched = false;
+  bool cLisTouched = false;
+  bool isHorizontalSlide = false;
+
+  void _changeVideoViewSize(PointerMoveEvent pointerMoveEvent) {
+    print("dragUpdate123: ${videoViewKey.currentState?.isPlaying}");
+
+    // 判断滑动方向
+    isHorizontalSlide = pointerMoveEvent.delta.dx.abs() > pointerMoveEvent.delta.dy.abs();
+
+    // 打印当前滑动方向
+    if (isHorizontalSlide) {
+      print("水平滑动");
+    } else {
+      print("垂直滑动");
+    }
+
+    if(isHorizontalSlide){
+      setState(() {});
+      return;
+    }
+
+// 处理播放状态
+    if (videoViewKey.currentState?.isPlaying ?? false) {
+      if(_scrollPhysics != null){
+        _scrollPhysics = null; // 可滚动
+      }
+
+      if (_videoViewHeight != null) {
+        _videoViewHeight = null; // 设置为默认值
+      }
+      setState(() {});
+      return;
+    }
+
+    // 获取屏幕高度
+    double screenHeight = MediaQuery.of(context).size.height;
+    double scrollOffset = 0.0;
+// 处理 _videoViewHeight 为 null 的情况
+    _videoViewHeight ??= screenHeight * 0.5;
+    // print("_videoViewHeighttf: ${_profileScrollController.hasClients} ${_commentScrollController.hasClients}");
+    // 获取两个 ScrollController 的 offset 值
+    if (_profileScrollController.hasClients && pLisTouched) {
+      print("_profileScrollController hasClients");
+      scrollOffset += _profileScrollController.offset;
+    }
+
+    if (_commentScrollController.hasClients && cLisTouched) {
+      print("_commentScrollController hasClients");
+      scrollOffset += _commentScrollController.offset;
+    }
+
+    print("scrollOffset: $scrollOffset");
+    // 暂停状态
+    if (scrollOffset == 0) {
+      print("情况一 暂停，offset==0$_videoViewHeight");
+      if(pointerMoveEvent.delta.dy < 0){
+        // 上拉
+        if(_videoViewHeight == 0 && _scrollPhysics != null){
+          _scrollPhysics = null;
+        }
+        print("上拉 ${_scrollPhysics == null}");
+        if(_scrollPhysics == null || _videoViewHeight != null){
+          _scrollPhysics ??= const NeverScrollableScrollPhysics();
+          _videoViewHeight = (_videoViewHeight! + pointerMoveEvent.delta.dy).clamp(0, screenHeight * 0.5);
+        }
+      }else{
+        _scrollPhysics ??= const NeverScrollableScrollPhysics();
+        // 下拉
+        if(_videoViewHeight == 0){
+          _videoViewHeight = null; // 设置为默认值
+        }else{
+          _videoViewHeight = (_videoViewHeight! + pointerMoveEvent.delta.dy).clamp(0, screenHeight * 0.5);
+        }
+      }
+    } else {
+      print("情况二 ");
+      if (pointerMoveEvent.delta.dy < 0) {
+        // 上拉
+        print("上拉 0001}");
+        _scrollPhysics ??= const NeverScrollableScrollPhysics();
+        _videoViewHeight = (_videoViewHeight! + pointerMoveEvent.delta.dy).clamp(0, screenHeight * 0.5);
+      }else{
+        // 下拉
+        print("下拉 0001}");
+        if(_scrollPhysics != null){
+          _scrollPhysics = null; // 可滚动
+        }
+      }
+    }
+    setState(() {});
+    return;
   }
 
-  _getVideoUrls()  async {
-    videoDetail=await _getVideoDetail(widget.videoInfo['id']);
-    String fileUrl = videoDetail['fileUrl'];
-    print("fileUrl: $fileUrl");
-    Uri uri = Uri.parse(fileUrl);
-
-    // 获取 expires 参数的值
-    String? expiresValue = uri.queryParameters['expires'];
-    // print( "expiresValue:${videoDetail["file"]["id"]}" );
-    // print("expires: $expiresValue");
-    // print("${videoDetail["file"]["id"]}_${expiresValue}_$xVersion");
-    var value = sha1.convert(utf8.encode("${videoDetail["file"]["id"]}_${expiresValue}_$xVersion"));
-    options.headers['X-Version']=value.toString();
-
-    // print("version: ${value.toString()}");
-    final res = await getVideoUrls(fileUrl);
-
-    setState(() {
-      videoUrls.clear();
-      videoUrls.addAll(res);
-    });
-
-    print(res);
-    return res;
+  void _toucheStatus(String type) {
+    switch (type) {
+      case "comment":
+        cLisTouched = true;
+        pLisTouched = false;
+        break;
+      case "profile":
+        pLisTouched = true;
+        cLisTouched = false;
+        break;
+      default:
+        break;
+    }
   }
-
 
   @override
   void initState() {
     super.initState();
     _getVideoUrls();
+    _commentScrollController.addListener(() {
+      _toucheStatus("comment");
+    });
+    _profileScrollController.addListener(() {
+      _toucheStatus("profile");
+    });
+  }
+
+  SliverPanel3Controller slidingPanel3Controller = SliverPanel3Controller();
+
+  late Map<String, dynamic> videoDetail={};
+  final List videoUrls=[];
+  Future<void> _getVideoDetail(String id) async {
+    final res = await getVideoDetail(id);
+    try {
+      setState(() {
+        videoDetail=res;
+      });
+    }catch (e) {
+      print(e);
+    }
+
+    // return res;
+  }
+
+  _getVideoUrls()  async {
+    try {
+      await _getVideoDetail(widget.videoInfo['id']);
+      String fileUrl = videoDetail['fileUrl'];
+      print("fileUrl: $fileUrl");
+      Uri uri = Uri.parse(fileUrl);
+
+      // 获取 expires 参数的值
+      String? expiresValue = uri.queryParameters['expires'];
+      var value = sha1.convert(utf8.encode("${videoDetail["file"]["id"]}_${expiresValue}_$xVersion"));
+
+      final res = await getVideoUrls(fileUrl,value.toString());
+
+      try{
+        setState(() {
+          videoUrls.clear();
+          videoUrls.addAll(res);
+        });
+      }catch(e){
+        print(e);
+      }
+
+
+      print(res);
+      return res;
+    }catch (e) {
+      print(e);
+      _getVideoUrls();
+    }
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _commentScrollController.dispose();
+    _profileScrollController.dispose();
   }
   @override
   Widget build(BuildContext context) {
     final bool isPortrait = MediaQuery.of(context).orientation == Orientation.portrait;
     return Scaffold(
+      // backgroundColor: Colors.black,
       extendBodyBehindAppBar: false,
         appBar: AppBar(
           toolbarHeight: 0,
@@ -87,29 +230,50 @@ class _VideoDetail extends State<VideoDetail> {
             )
 
         ),
-      body: Stack(
-        children: [
-          Flex(
-            direction: getValueForScreenType(
-              context: context,
-              mobile: isPortrait ? Axis.vertical : Axis.horizontal,
-              tablet: Axis.horizontal,
+      body: Listener(
+        onPointerMove: _changeVideoViewSize,
+        child: Stack(
+          children: [
+            Flex(
+              direction: getValueForScreenType(
+                context: context,
+                mobile: isPortrait ? Axis.vertical : Axis.horizontal,
+                tablet: Axis.horizontal,
+              ),
+              children: [
+                _buildVideoSection(isPortrait),
+                _buildCommentSection(isPortrait),
+              ],
             ),
-            children: [
-              _buildVideoSection(isPortrait),
-              _buildCommentSection(isPortrait),
-            ],
-          ),
-          _buildSliverPanel(),
-        ],
+            _buildSliverPanel(),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildVideoProfile() {
     return Profile(
+      scrollPhysics: _scrollPhysics,
       // onDownload: _downloadVideo,
-      onAddPlaylist: () {
+      scrollController: _profileScrollController,
+      handleFollow: (isFollowed) async {
+        if (isFollowed) {
+          await unfollowUser(videoDetail['user']["id"]);
+        }else {
+          await followUser(videoDetail['user']["id"]);
+        }
+        await _getVideoDetail(widget.videoInfo['id']);
+      },
+      handleLIke: (isLiked) async {
+        if (isLiked) {
+          await unlikeVideo(videoDetail['id']);
+        }else {
+          await likeVideo(videoDetail['id'], storeController.userInfo);
+        }
+        await _getVideoDetail(widget.videoInfo['id']);
+      },
+      onSetPlaylist: () {
         slidingPanel3Controller.setPanel3State(Panel3State.CENTER);
       },
       videoInfo: videoDetail,
@@ -122,12 +286,16 @@ class _VideoDetail extends State<VideoDetail> {
       flex: 2,
       child: Column(
         children: [
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 300),
+          Container(
+            color: Colors.black,
+            // height: _videoViewSSize,
+            // duration: const Duration(milliseconds: 30000),
             child:
             VideoView(
+              key: videoViewKey,
               urlList: videoUrls,
-              height: isPortrait ? null : MediaQuery.of(context).size.height * 0.5,
+              // width: _videoViewWidth,
+              height:_videoViewHeight,
             ),
           ),
           Flexible(
@@ -153,11 +321,16 @@ class _VideoDetail extends State<VideoDetail> {
         Center(child: Text('简介')),
         Center(child: Text('评论')),
       ],
+      tabBarViewProperties: TabBarViewProperties(
+        physics: isHorizontalSlide ? null : const NeverScrollableScrollPhysics()
+      ),
       views: [
         _buildVideoProfile(),
-        const Comment(),
+        Comment(
+          scrollPhysics: _scrollPhysics,
+          scrollController: _commentScrollController,
+        )
       ],
-      onChange: (index) => print(index),
     );
   }
 

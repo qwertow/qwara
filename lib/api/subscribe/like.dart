@@ -1,11 +1,16 @@
 import 'package:qwara/utils/dioRequest.dart';
 
-Future<dynamic> likeVideo(String postId) async {
-  var response = await dio.post('/posts/$postId/like');
+Future<dynamic> likeVideo(String videoId,Map<String, dynamic> userInfo) async {
+  var response = await dio.post('/video/$videoId/like',
+      data: {
+        'user': userInfo,
+        "createdAt": DateTime.now().toUtc().toIso8601String()
+      }
+  );
   return response.data;
 }
 
-Future<dynamic> unlikeVideo(String postId) async {
-  var response = await dio.post('/posts/$postId/unlike');
-  return response.data;
+Future<void> unlikeVideo(String videoId) async {
+  await dio.delete('/video/$videoId/like');
+  return ;
 }

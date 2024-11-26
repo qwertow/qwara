@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:qwara/api/user/user.dart';
 import 'package:qwara/components/ListItem.dart';
 import 'package:qwara/components/MyCard.dart';
 import 'package:get/get.dart' hide Response;
@@ -70,7 +71,10 @@ class _DrawerView extends State<DrawerView> {
         const ListItem(
           lead: Icon(Icons.settings_outlined),
           text: Text("设置"),
-        )
+        ),
+        TextButton(onPressed: (){
+          logout();
+        }, child: Text("退出登录"))
       ],
     );
   }

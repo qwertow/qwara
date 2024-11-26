@@ -2,15 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:responsive_builder/responsive_builder.dart';
 
 class Comment extends StatefulWidget {
-  const Comment({super.key});
+  const Comment({super.key, this.scrollPhysics, this.scrollController});
+  final ScrollPhysics? scrollPhysics;
+  final ScrollController? scrollController;
 
   @override
   State<Comment> createState() => _CommentState();
 }
 
-class _CommentState extends State<Comment> {
+class _CommentState extends State<Comment> with AutomaticKeepAliveClientMixin{
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final bool isPortrait = MediaQuery.of(context).orientation == Orientation.portrait;
     return Container(
       // height: 200,
@@ -29,7 +32,33 @@ class _CommentState extends State<Comment> {
           ),
           Expanded(
             child: ListView(
+              physics: widget.scrollPhysics,
+              controller: widget.scrollController,
               children: const [
+                ListTile(title: Text('评论1')),
+                ListTile(title: Text('评论2')),
+                ListTile(title: Text('评论3')),
+                ListTile(title: Text('评论1')),
+                ListTile(title: Text('评论2')),
+                ListTile(title: Text('评论3')),
+                ListTile(title: Text('评论1')),
+                ListTile(title: Text('评论2')),
+                ListTile(title: Text('评论3')),
+                ListTile(title: Text('评论1')),
+                ListTile(title: Text('评论2')),
+                ListTile(title: Text('评论3')),
+                ListTile(title: Text('评论1')),
+                ListTile(title: Text('评论2')),
+                ListTile(title: Text('评论3')),
+                ListTile(title: Text('评论1')),
+                ListTile(title: Text('评论2')),
+                ListTile(title: Text('评论3')),
+                ListTile(title: Text('评论1')),
+                ListTile(title: Text('评论2')),
+                ListTile(title: Text('评论3')),
+                ListTile(title: Text('评论1')),
+                ListTile(title: Text('评论2')),
+                ListTile(title: Text('评论3')),
                 ListTile(title: Text('评论1')),
                 ListTile(title: Text('评论2')),
                 ListTile(title: Text('评论3')),
@@ -40,4 +69,7 @@ class _CommentState extends State<Comment> {
       ),
     );
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }

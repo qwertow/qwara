@@ -41,6 +41,7 @@ class MyCard extends StatelessWidget{
               child: CircleAvatar(
                 radius: 40,
                 backgroundImage:_userInfo['user'] == null? null : NetworkImage(
+                  scale: 2,
                     'https://i.iwara.tv/image/avatar/${_userInfo['user']?['avatar']['id'] }/${_userInfo['user']?['avatar']['name']}',
                     headers: {
                       'Referer':"https://www.iwara.tv/",

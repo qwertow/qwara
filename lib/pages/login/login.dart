@@ -75,7 +75,7 @@ class _LoginPageState extends State<LoginPage> {
                 String password = _passwordController.text;
                 // 进行验证以及后续操作
                 await login(username: email, password:password);
-                await getAccessToken();
+                // await getAccessToken();
                 print('邮箱: $email, 密码: $password');
               },
               child: const Text('登录', style: TextStyle(color: Colors.black)),

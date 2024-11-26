@@ -1,5 +1,6 @@
 
 import 'package:flutter/material.dart';
+import 'package:qwara/main.dart';
 import 'package:qwara/pages/login/login.dart';
 import 'package:qwara/pages/videoDetail/videoDetail.dart';
 
@@ -7,7 +8,7 @@ import 'package:qwara/pages//home/home.dart';
 import 'package:qwara/pages//videosPage//VideosPage.dart';
 
 final Map routes = {
-  "/home":(context)=>const Home(),
+  "/home":(context)=>MyApp(),
   "/recommend":(context)=>const VideosPage(),
   "/detail":(context,{arguments})=>VideoDetail(videoInfo: arguments),
   "/login":(context)=> const LoginPage(),

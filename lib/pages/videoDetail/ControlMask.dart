@@ -80,7 +80,7 @@ class _ControlMaskState extends State<ControlMask> with TickerProviderStateMixin
         Visibility(
           visible: _controller.value.isBuffering,
           child: Container(
-            height: widget.width! / _controller.value.aspectRatio,
+            height:widget.height,
             color: Colors.black54,
             alignment: Alignment.center,
             child: const Row(
@@ -97,8 +97,8 @@ class _ControlMaskState extends State<ControlMask> with TickerProviderStateMixin
           ),
         ),
         Container(
-          height: widget.width! / _controller.value.aspectRatio,
-          // color: Colors.black54,
+          height: widget.height,
+          color: Colors.transparent,
           alignment: Alignment.center,
           child: Row(
             // mainAxisSize: MainAxisSize.max,
@@ -170,12 +170,9 @@ class _ControlMaskState extends State<ControlMask> with TickerProviderStateMixin
           )
         ),
         Positioned(
-          // width: widget.width ??
-          //     (widget.height != null ? (widget.height! * _controller.value.aspectRatio) : MediaQuery.of(context).size.width),
-          width: widget.width,
-          // height: MediaQuery.of(context).size.height,
-          //   width: widget.fullScreen ? MediaQuery.of(context).size.width-150:MediaQuery.of(context).size.width,
             bottom: 0,
+            left: 0,
+            right: 0,
             child: Row(
               children: [
                 const SizedBox(width: 20),

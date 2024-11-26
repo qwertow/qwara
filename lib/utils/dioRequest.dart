@@ -15,7 +15,6 @@ final accessToken = storeController.accessToken;
 BaseOptions options = BaseOptions()
   ..headers = {
     'Authorization': 'Bearer $accessToken',
-    'X-Version': '',
   }..baseUrl = API_URL
 ;
 

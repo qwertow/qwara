@@ -17,8 +17,7 @@ class FullScreen extends StatefulWidget {
   State<FullScreen> createState() => _FullScreenState();
 }
 class _FullScreenState extends State<FullScreen> {
-  late double? videoWidth=null;
-  late double? videoHeight=null;
+
   late VideoPlayerController _controller;
 
   void listener() {
@@ -28,17 +27,22 @@ class _FullScreenState extends State<FullScreen> {
   @override
   void initState() {
     super.initState();
-
-    SystemChrome.setPreferredOrientations([
-      // DeviceOrientation.portraitUp,
-      // DeviceOrientation.portraitDown,
-      DeviceOrientation.landscapeLeft,
-      DeviceOrientation.landscapeRight,
-    ]);
-
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: []);
-
     _controller = widget.controller;
+
+    if(_controller.value.aspectRatio>=1){
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.landscapeLeft,
+        DeviceOrientation.landscapeRight,
+      ]);
+    }else{
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.portraitUp,
+        DeviceOrientation.portraitDown,
+      ]);
+    }
+
+// 全屏时隐藏系统状态栏
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: []);
 
     _controller.addListener(listener);
     eventBus.on<ControllerReloadEvent>().listen((event){
@@ -80,39 +84,43 @@ class _FullScreenState extends State<FullScreen> {
 
     return  Scaffold(
       backgroundColor: Colors.black,
-      // body: Stack(
-      //   children: <Widget>[
-      body: Center(
-            child: Hero(
-                tag: "player",
-                child: GestureDetector(
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      AspectRatio(
-                        aspectRatio: _controller.value.aspectRatio,
-                        child: VideoPlayer(_controller),
-                      ),
-                      showOverlay? ControlMask(
-                        switchClarity: widget.switchClarity,
-                        controller: _controller,
-                        fullScreen: true,
-                        width: MediaQuery.of(context).size.width ,
-                        height: MediaQuery.of(context).size.height,
-                      ): Container(),// 不显示遮罩层时返回空容器
-                    ],
-                  ),
-                  onDoubleTap: (){
-                    videoControl();
-                  },
-                  onTap: (){
-                    _toggleOverlay();
-                  },
-                )
+      body: Hero(
+        tag: "player",
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+
+            AspectRatio(
+              aspectRatio: _controller.value.aspectRatio,
+              child: VideoPlayer(_controller),
             ),
-          ),
-      //   ],
-      // ),
+
+            GestureDetector(
+              onDoubleTap: (){
+                videoControl();
+              },
+              onTap: (){
+                _toggleOverlay();
+              },
+              child: showOverlay? Container(
+                child: ControlMask(
+                  switchClarity: widget.switchClarity,
+                  controller: _controller,
+                  fullScreen: true,
+                  // width: MediaQuery.of(context).size.width ,
+                  // height: MediaQuery.of(context).size.height,
+                ),
+              ): Container(
+                color: Colors.transparent,
+              ),// 不显示遮罩层时返回空容器,
+            )
+
+          ],
+        ),
+
+        // )
+        // ),
+      ),
     );
   }
 

@@ -24,7 +24,6 @@ class _HomeState extends State<Home> with AutomaticKeepAliveClientMixin {
     setState(() {
       videoListLoadings=true;
     });
-    await getUserInfo();
     Map res=await getSubscribedVideos(
       page: currentPage-1,
     );
@@ -37,6 +36,11 @@ class _HomeState extends State<Home> with AutomaticKeepAliveClientMixin {
     // print(res);
   }
 
+  _initData() async {
+    await getUserInfo();
+    await getData();
+  }
+
   pageChanged(int page) {
     getData();
   }
@@ -45,7 +49,7 @@ class _HomeState extends State<Home> with AutomaticKeepAliveClientMixin {
   void initState() {
     super.initState();
 
-    getData();
+    _initData();
   }
 
   @override

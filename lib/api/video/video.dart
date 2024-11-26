@@ -35,17 +35,20 @@ Future<Map<String, dynamic>> getVideoDetail(String videoId)async {
   return response.data;
 }
 //获取视频链接
-Future<List> getVideoUrls(String filrUrl)async {
+Future<List> getVideoUrls(String fileUrl,String xVersion)async {
   print('getVideoUrl');
-  final response = await dio.get(filrUrl);
+  dio.options.headers['X-Version'] = xVersion;
+  final response = await dio.get(fileUrl);
   // print(response.data.toString());
   return response.data;
 }
 //获取订阅视频
 Future<Map> getSubscribedVideos({ required int page, String rating = 'ecchi'})async {
   print('getSubscribedVideos');
+  dio.options.headers['Authorization'] = 'Bearer ${storeController.accessToken}';
+
   final response=await dio.get(
-      'https://api.iwara.tv/videos',
+      '/videos',
       queryParameters: {
         'subscribed': true,
         'page': page,

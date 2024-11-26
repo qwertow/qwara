@@ -19,16 +19,17 @@ class VideoView extends StatefulWidget {
   final double? width;
 
   @override
-  State<VideoView> createState() => _VideoView();
+  State<VideoView> createState() => VideoViewState();
 }
 
-class _VideoView extends State<VideoView> {
+class VideoViewState extends State<VideoView> {
   List initUrlList = [];
   String definition = storeController.clarityStorage.value;
   String? url;
   double? videoWidth;
   double? videoHeight;
   late VideoPlayerController _controller;
+  bool isPlaying = false;
   bool showOverlay = false; // 控制遮罩层的显隐
 
   double proportion = 0;
@@ -50,6 +51,7 @@ class _VideoView extends State<VideoView> {
   @override
   void didUpdateWidget(covariant VideoView oldWidget) {
     super.didUpdateWidget(oldWidget);
+
     if (!listEquals(widget.urlList, initUrlList)) {
       // _updateUrl();
       _loadVideo();
@@ -90,6 +92,7 @@ class _VideoView extends State<VideoView> {
       })..addListener(() {
             setState(() {
               //进度条的播放进度，用当前播放时间除视频总长度得到
+              isPlaying = _controller.value.isPlaying;
               try{
                 buffered = _controller.value.buffered[0].end;
               }catch(e){
@@ -102,6 +105,7 @@ class _VideoView extends State<VideoView> {
               print("proportion: $proportion");
             });
             // print("resetTimer: ${_controller.value.isBuffering}",);
+            //   _controller.value.isPlaying
           }
       );
     // print("initControllerOD: $oldDura");
@@ -143,53 +147,21 @@ class _VideoView extends State<VideoView> {
     }
     return _controller;
   }
-  void _updateUrl(){
-    if(initUrlList.isEmpty){
-      initUrlList.addAll(widget.urlList);
-    }
-    try{
-      if(widget.urlList.isEmpty){
-        throw Exception("urlList is empty");
-      }
-
-      url="https://${widget.urlList.firstWhere((element)=>element["name"]==definition)["src"]["view"]}";
-    }catch(e){
-      url='';
-    }
-
-    _controller = VideoPlayerController.networkUrl(Uri.parse(url!))
-      ..initialize().then((_) {
-        // Ensure the first frame is shown after the video is initialized, even before the play button has been pressed.
-        setState(() {});
-      })..addListener(() {
-        setState(() {
-          //进度条的播放进度，用当前播放时间除视频总长度得到
-          try{
-            buffered = _controller.value.buffered[0].end;
-          }catch(e){
-            buffered=const Duration(seconds: 0);
-          }
-
-          dura=_controller.value.position;
-          total=_controller.value.duration;
-          proportion=total.inSeconds==0?0:dura.inSeconds/total.inSeconds;
-          print("proportion: $proportion");
-        });
-        // print("resetTimer: ${_controller.value.isBuffering}",);
-      });
-  }
-
 
   @override
   Widget build(BuildContext context) {
     return Wrap(
       alignment: WrapAlignment.center,
       children: [
-        Container(
-          color: Colors.black,
-          child: ConstrainedBox(
+        AnimatedSize(
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.fastOutSlowIn,
+          // color: Colors.black,
+          child:
+          ConstrainedBox(
             constraints: BoxConstraints(
-              maxHeight: widget.height ?? MediaQuery.of(context).size.height,
+              maxWidth: widget.width ?? double.infinity,
+              maxHeight:(_controller.value.isPlaying ? null : widget.height) ?? MediaQuery.of(context).size.height * 0.5,
             ),
             child: _controller.value.isInitialized ? _buildVideoPlayer() : _buildLoadingIndicator(),
           ),
@@ -204,42 +176,69 @@ class _VideoView extends State<VideoView> {
   }
 
   Widget _buildVideoPlayer() {
-    // return SizedBox(
-    //   height: widget.height ?? 200,
-    //   child: Chewie(
-    //     controller: _chewieController,
-    //   ),
-    // );
     return GestureDetector(
       onDoubleTap: videoControl,
       onTap: _toggleOverlay,
       child: Stack(
         alignment: Alignment.center,
         children: [
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final aspectRatio = _controller.value.aspectRatio;
-              final width = constraints.maxWidth;
-              final height = constraints.maxHeight;
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                if (videoWidth != width) {
-                  setState(() {
-                    videoWidth = width; // 更新宽度
-                  });
-                }
-                if (videoHeight!= height) {
-                  setState(() {
-                    videoHeight = height; // 更新高度
-                  });
-                }
-              });
-              return AspectRatio(
-                aspectRatio: aspectRatio,
-                child: VideoPlayer(_controller),
-              );
-            },
+          // LayoutBuilder(
+          //   builder: (context, constraints) {
+          //     final aspectRatio = _controller.value.aspectRatio;
+          //     final width = constraints.maxWidth;
+          //     final height = constraints.maxHeight;
+          //     WidgetsBinding.instance.addPostFrameCallback((_) {
+          //       if (videoWidth != width) {
+          //         setState(() {
+          //           videoWidth = width; // 更新宽度
+          //           print("videoWidth: $videoWidth");
+          //           print("videoWidth111: ${(videoWidth ?? 0) / _controller.value.aspectRatio}");
+          //         });
+          //       }
+          //       if (videoHeight!= height) {
+          //         setState(() {
+          //           videoHeight = height; // 更新高度
+          //           print("videoHeight: $videoHeight");
+          //           print("videoWidth222: ${(videoWidth ?? 0) / _controller.value.aspectRatio}");
+          //         });
+          //       }
+          //     });
+          //     return AspectRatio(
+          //       aspectRatio: aspectRatio,
+          //       child: VideoPlayer(_controller),
+          //     );
+          //   },
+          // ),
+          AspectRatio(
+            aspectRatio: _controller.value.aspectRatio,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final aspectRatio = _controller.value.aspectRatio;
+                final mwidth = constraints.maxWidth;
+                final mheight = constraints.maxHeight;
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (videoWidth != mwidth) {
+                    setState(() {
+                      videoWidth = mwidth; // 更新宽度
+                      print("videoWidth: $videoWidth");
+                      print("videoWidth111: ${(videoWidth ?? 0) /aspectRatio}");
+                    });
+                  }
+                  if (videoHeight!= mheight) {
+                    setState(() {
+                      videoHeight = mheight; // 更新高度
+
+                    });
+                  }
+                  print("videoHeight: $videoHeight");
+                  print("videoWidth222: ${(videoWidth ?? 0) / aspectRatio}");
+                });
+                return  VideoPlayer(_controller);
+              },
+            ),
           ),
-          if (showOverlay) ControlMask(
+
+          showOverlay? ControlMask(
               controller: _controller,
               fullScreen: false,
               width: videoWidth,
@@ -252,6 +251,10 @@ class _VideoView extends State<VideoView> {
                 _loadVideo();
 
               },
+          ):Container(
+            height: videoHeight ?? 0,
+            // width: videoWidth,
+            color: Colors.transparent,
           ),
         ],
       ),

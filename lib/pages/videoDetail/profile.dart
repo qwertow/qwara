@@ -13,26 +13,45 @@ class Profile extends StatefulWidget {
   const Profile({super.key,
     required this.videoInfo,
     required this.fileUrls,
-    this.onAddPlaylist,
-    this.onDownload
+    this.onSetPlaylist,
+    this.onDownload,
+    this.handleLIke,
+    this.handleFollow, this.scrollPhysics, this.scrollController
   });
 
   final Map<String, dynamic> videoInfo;
   final List fileUrls;
   final Future<bool> Function()? onDownload;
-  final void Function()? onAddPlaylist;
-  // final Function onLIke;
+  final void Function()? onSetPlaylist;
+  final Function(bool isLiked)? handleLIke;
+  final Function(bool isFollowed)? handleFollow;
+  final ScrollPhysics? scrollPhysics;
+  final ScrollController? scrollController;
 
   @override
   State<Profile> createState() => _ProfileState();
 }
 
-class _ProfileState extends State<Profile> {
+class _ProfileState extends State<Profile> with AutomaticKeepAliveClientMixin{
   final Map<String, dynamic> _userInfo = storeController.userInfo;
+  bool isLiked = false;
+  bool isFollowed = false;
   bool downloadSccuess = false;
   void _downSccuessCallback() {
 
   }
+
+  @override
+  void didUpdateWidget(Profile oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if(widget.videoInfo.isNotEmpty) {
+      setState(() {
+        isLiked = widget.videoInfo['liked'] ?? false;
+        isFollowed = widget.videoInfo['user']?['following'] ?? false;
+      });
+    }
+  }
+
   ///当前进度进度百分比  当前进度/总进度 从0-1
   double currentProgress =0.0;
   Future<bool> _downloadVideo(String definition) async {
@@ -109,10 +128,13 @@ class _ProfileState extends State<Profile> {
   }
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     // print("bbbbbbbbb${widget.videoInfo['body']}");
     return Skeletonizer(
         enabled: widget.videoInfo.isEmpty,
         child: ListView(
+          physics: widget.scrollPhysics,
+          controller: widget.scrollController,
           children: [
             //视频信息
             Card(
@@ -124,7 +146,25 @@ class _ProfileState extends State<Profile> {
                       maxLines: isExpanded ? null : 1, // 根据状态调整显示行数
                       overflow: isExpanded ? TextOverflow.visible : TextOverflow.ellipsis, // 根据状态调整溢出行为
                     ),
-                    subtitle: Text(formatDate(widget.videoInfo['updatedAt'] ?? '1970-01-01 00:00:00')),
+                    subtitle: Row(
+                      children: [
+                        Text(formatDate(widget.videoInfo['updatedAt'] ?? '1970-01-01 00:00:00')),
+                        const Spacer(),
+                        Row(
+                          children: [
+                            const Icon(Icons.visibility,size: 12,),
+                            Text("${widget.videoInfo['numViews'] ?? 0}"),
+                          ],
+                        ),
+                        Row(
+                          children: [
+                            const SizedBox(width: 5,),
+                            const Icon(Icons.favorite,size: 12,),
+                            Text("${widget.videoInfo['numLikes'] ?? 0}"),
+                          ],
+                        )
+                      ],
+                    ),
                     trailing: IconButton(
                       onPressed: () {
                         setState(() {
@@ -188,17 +228,19 @@ class _ProfileState extends State<Profile> {
                         children: [
                           IconButton(
                             onPressed: () {
-                              widget.onAddPlaylist!();
+                              widget.onSetPlaylist!();
                               // slidingPanel3Controller.setPanel3State(Panel3State.CENTER);
                             },
                             icon: const Icon(Icons.playlist_add_outlined),
                           ),
                           TextButton(
                             style: ButtonStyle(
-                              backgroundColor: WidgetStateProperty.all(Colors.grey[300]),
+                              backgroundColor: WidgetStateProperty.all(isLiked ? Colors.blue : Colors.grey[300]),
                             ),
-                            onPressed: () {},
-                            child: const Text('like'),
+                            onPressed: () {
+                              widget.handleLIke?.call(isLiked);
+                            },
+                            child: Text(isLiked ? 'unlike': 'like'),
                           ),
                           const SizedBox(
                             width: 20,
@@ -216,7 +258,7 @@ class _ProfileState extends State<Profile> {
                   leading: CircleAvatar(
                     radius: 26,
                     backgroundImage:widget.videoInfo['user'] == null? null : NetworkImage(
-                        'https://i.iwara.tv/image/avatar/${widget.videoInfo['user']?['avatar']['id'] }/${widget.videoInfo['user']?['avatar']['name']}',
+                        'https://i.iwara.tv/image/avatar/${widget.videoInfo['user']?['avatar']?['id'] }/${widget.videoInfo['user']?['avatar']?['name']}',
                       headers: {
                         'Referer':"https://www.iwara.tv/",
                         // 'Content-Type':'image/jpeg'
@@ -227,10 +269,12 @@ class _ProfileState extends State<Profile> {
                   subtitle: Text("@${widget.videoInfo['user']?['username'] ?? '作者用户名'}"),
                   trailing: TextButton(
                       style: ButtonStyle(
-                        backgroundColor: WidgetStateProperty.all(Colors.grey[300]),
+                        backgroundColor: WidgetStateProperty.all(isFollowed ? Colors.blue : Colors.grey[300]),
                       ),
-                      onPressed: () {},
-                      child: const Text('关注')),
+                      onPressed: () {
+                        widget.handleFollow?.call(isFollowed);
+                      },
+                      child: Text(isFollowed ? '已关注': '关注')),
                 )
             ),
             //tags
@@ -257,10 +301,40 @@ class _ProfileState extends State<Profile> {
             Text("这里是完整的内容和其他组件..."), // 你可以在这里添加任何其他组件
             Text("这里是完整的内容和其他组件..."), // 你可以在这里添加任何其他组件
             Text("这里是完整的内容和其他组件..."), // 你可以在这里添加任何其他组件
+            Text("这里是完整的内容和其他组件..."), // 你可以在这里添加任何其他组件
+            Text("这里是完整的内容和其他组件..."), // 你可以在这里添加任何其他组件
+            Text("这里是完整的内容和其他组件..."), // 你可以在这里添加任何其他组件
+            Text("这里是完整的内容和其他组件..."), // 你可以在这里添加任何其他组件
+            Text("这里是完整的内容和其他组件..."), // 你可以在这里添加任何其他组件
+            Text("这里是完整的内容和其他组件..."), // 你可以在这里添加任何其他组件
+            Text("这里是完整的内容和其他组件..."), // 你可以在这里添加任何其他组件
+            Text("这里是完整的内容和其他组件..."), // 你可以在这里添加任何其他组件
+            Text("这里是完整的内容和其他组件..."), // 你可以在这里添加任何其他组件
+            Text("这里是完整的内容和其他组件..."), // 你可以在这里添加任何其他组件Text("这里是完整的内容和其他组件..."), // 你可以在这里添加任何其他组件
+            Text("这里是完整的内容和其他组件..."), // 你可以在这里添加任何其他组件
+            Text("这里是完整的内容和其他组件..."), // 你可以在这里添加任何其他组件
+            Text("这里是完整的内容和其他组件..."), // 你可以在这里添加任何其他组件
+            Text("这里是完整的内容和其他组件..."), // 你可以在这里添加任何其他组件
+            Text("这里是完整的内容和其他组件..."), // 你可以在这里添加任何其他组件
+            Text("这里是完整的内容和其他组件..."), // 你可以在这里添加任何其他组件
+            Text("这里是完整的内容和其他组件..."), // 你可以在这里添加任何其他组件
+            Text("这里是完整的内容和其他组件..."), // 你可以在这里添加任何其他组件
+            Text("这里是完整的内容和其他组件..."), // 你可以在这里添加任何其他组件Text("这里是完整的内容和其他组件..."), // 你可以在这里添加任何其他组件
+            Text("这里是完整的内容和其他组件..."), // 你可以在这里添加任何其他组件
+            Text("这里是完整的内容和其他组件..."), // 你可以在这里添加任何其他组件
+            Text("这里是完整的内容和其他组件..."), // 你可以在这里添加任何其他组件
+            Text("这里是完整的内容和其他组件..."), // 你可以在这里添加任何其他组件
+            Text("这里是完整的内容和其他组件..."), // 你可以在这里添加任何其他组件
+            Text("这里是完整的内容和其他组件..."), // 你可以在这里添加任何其他组件
+            Text("这里是完整的内容和其他组件..."), // 你可以在这里添加任何其他组件
+            Text("这里是完整的内容和其他组件..."), // 你可以在这里添加任何其他组件
+            Text("这里是完整的内容和其他组件..."), // 你可以在这里添加任何其他组件
           ],
-
         )
     );
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }
 
