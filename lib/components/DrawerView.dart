@@ -3,10 +3,9 @@ import 'package:qwara/api/user/user.dart';
 import 'package:qwara/components/ListItem.dart';
 import 'package:qwara/components/MyCard.dart';
 import 'package:get/get.dart' hide Response;
+import 'package:qwara/EventBus/EventBus.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
-import '../getX/StoreController.dart';
-
-final storeController = Get.find<StoreController>();
 
 class DrawerView extends StatefulWidget {
   const DrawerView({super.key,this.url});
@@ -17,40 +16,12 @@ class DrawerView extends StatefulWidget {
 
 class _DrawerView extends State<DrawerView> {
 
-  final Map<String,dynamic> _userInfo=storeController.userInfo;
 
   @override
   Widget build(BuildContext context) {
     return ListView(
       children: [
-        MyCard(
-          title: _userInfo['user']?['name'] ?? '未登录',
-          subtitle: "@${_userInfo['user']?['name'] ?? '未登录'}",
-          children: const [
-            Row(
-              children: [
-                Expanded(
-                  flex: 1,
-                  child: InfoCard(
-                    name: "粉丝",
-                  ),
-                ),
-                Expanded(
-                  flex: 1,
-                  child: InfoCard(
-                    name: "关注",
-                  ),
-                ),
-                Expanded(
-                  flex: 1,
-                  child: InfoCard(
-                    name: "好友",
-                  ),
-                ),
-              ],
-            )
-          ],
-        ),
+        MyCard(),
         // const SizedBox(height: 10),
         const ListItem(
           lead: Icon(Icons.favorite_border),
@@ -72,44 +43,21 @@ class _DrawerView extends State<DrawerView> {
           lead: Icon(Icons.settings_outlined),
           text: Text("设置"),
         ),
+        TextButton(onPressed: () async {
+          if (await getAccessToken()){
+            Get.snackbar("提示", "更新AccessToken成功");
+            eventBus.fire(UpdateAccessTokenEvent(true));
+          }else{
+            Get.snackbar("提示", "更新AccessToken失败,请重新登录");
+          }
+        }, child: const Text("更新AccessToken")),
         TextButton(onPressed: (){
           logout();
-        }, child: Text("退出登录"))
+        }, child: const Text("退出登录 fake")),
+        TextButton(onPressed: () {
+          Fluttertoast.showToast(msg: "show toast test");
+        }, child: const Text("show toast test"))
       ],
-    );
-  }
-}
-
-class InfoCard extends StatelessWidget {
-  const InfoCard({
-    super.key,
-    this.num=0,
-    this.name='null',
-    this.onItemTap,
-  });
-  final int? num;
-  final String? name;
-  final Function? onItemTap;
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xCDBCBCFF),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      margin: const EdgeInsets.only(left: 2,right: 2),
-      // height: 50,
-      child: InkWell(
-        onTap: () {
-          if (onItemTap != null) {
-            onItemTap!();
-          }
-        },
-        child: ListTile(
-          title: Text(num.toString()),
-          subtitle: Text(name as String),
-        ),
-      )
     );
   }
 }

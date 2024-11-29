@@ -11,30 +11,23 @@ Future<void> login({required String username, required String password}) async {
   });
   storeController.setToken(response.data['token']);
   await getAccessToken();
-  Get.offAllNamed('/home');
+  await getUserInfo();
+  Get.offAndToNamed('/home');
   return ;
 }
 
-Future<void> getAccessToken() async {
+Future<bool> getAccessToken() async {
   dio.options.headers['Authorization'] = 'Bearer ${storeController.token}';
   final response = await dio.post('/user/token');
   storeController.setAccessToken(response.data['accessToken']);
-
-  return ;
+  if (response.statusCode == 200) {
+    return true;
+  } else {
+    // storeController.setToken(null);
+    return false;
+  }
 }
 
-// Future<void> getUserInfo() async {
-//
-//   try {
-//     final response = await dio.get('/user');
-//     storeController.setUserInfo(response.data);
-//   }catch (e) {
-//     await getAccessToken();
-//     getUserInfo();
-//   }
-//
-//   return ;
-// }
 Future<void> getUserInfo() async {
   bool success = false;
   int retryCount = 0;
@@ -42,7 +35,9 @@ Future<void> getUserInfo() async {
     try {
       final response = await dio.get('/user');
       storeController.setUserInfo(response.data);
-      success = true; // 请求成功，退出循环
+      if(response.statusCode == 200){
+        success = true; // 请求成功，退出循环
+      }
     } catch (e) {
       retryCount++;
 
@@ -64,8 +59,19 @@ Future<void> getUserInfo() async {
 
 
 Future<void> logout() async {
-  storeController.setToken('');
-  Get.offAllNamed('/login');
+  // storeController.setToken(null);
+  Get.toNamed('/login');
   return ;
 }
 
+Future<Map<String,dynamic>> getUserProfile(String username) async {
+  final response = await dio.get('/profile/$username');
+  return response.data;
+}
+
+//用户评论
+Future<Map<String,dynamic>> getUserProfileComment(String userId, int page) async {
+  print('getUserProfileComment userId: $userId, page: $page');
+  final response = await dio.get('/profile/$userId/comments', queryParameters: {'page': page-1});
+  return response.data;
+}

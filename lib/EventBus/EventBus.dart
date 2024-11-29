@@ -8,3 +8,9 @@ class ControllerReloadEvent {
 
   VideoPlayerController controller;
 }
+
+class UpdateAccessTokenEvent {
+  UpdateAccessTokenEvent(this.success);
+
+  bool success;
+}

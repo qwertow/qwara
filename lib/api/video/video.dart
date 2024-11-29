@@ -14,14 +14,24 @@ import 'package:qwara/utils/dioRequest.dart';
 // }
 // https://api.iwara.tv/videos?sort=trending&page=0&rating=ecchi
 //获取视频列表
-Future<Map<String, dynamic>> getVideoList({required String sort, required int page, String rating = 'ecchi'})async {
-  print('getVideoList $sort $page $rating');
+Future<Map<String, dynamic>> getVideoList({
+  String? sort,
+  int? page,
+  String rating = 'ecchi',
+  String? userId,
+  int? limit,
+  String? exclude
+})async {
+  print('getVideoList $sort $page $rating $userId $limit $exclude');
   final response=await dio.get(
       '/videos',
       queryParameters: {
+        'exclude': exclude,
        'sort': sort,
         'page': page,
-        'rating': rating
+        'rating': rating,
+        'user': userId,
+        'limit': limit
       }
   );
   // print(response.data.toString());
@@ -45,16 +55,32 @@ Future<List> getVideoUrls(String fileUrl,String xVersion)async {
 //获取订阅视频
 Future<Map> getSubscribedVideos({ required int page, String rating = 'ecchi'})async {
   print('getSubscribedVideos');
-  dio.options.headers['Authorization'] = 'Bearer ${storeController.accessToken}';
+  // dio.options.headers['Authorization'] = 'Bearer ${storeController.accessToken}';
 
   final response=await dio.get(
       '/videos',
       queryParameters: {
         'subscribed': true,
-        'page': page,
+        'page': page-1,
         'rating': rating
       }
   );
+  // print(response.data.toString());
+  return response.data;
+}
+
+//获取视频评论
+Future<Map<String, dynamic>> getVideoComments(String videoId, {required int page})async {
+  print('getVideoCommentsapi');
+  final response=await dio.get('/video/$videoId/comments', queryParameters: {'page': page-1});
+  print(response.data.toString());
+  return response.data;
+}
+
+//获取类似视频
+Future<Map<String, dynamic>> getSimilarVideos(String videoId)async {
+  print('getSimilarVideos');
+  final response=await dio.get('/video/$videoId/related');
   // print(response.data.toString());
   return response.data;
 }

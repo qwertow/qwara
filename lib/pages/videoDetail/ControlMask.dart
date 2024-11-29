@@ -29,7 +29,7 @@ class ControlMask extends StatefulWidget{
 
 class _ControlMaskState extends State<ControlMask> with TickerProviderStateMixin{
   late VideoPlayerController _controller;
-  late Clarity _clarity=storeController.clarityStorage;
+  late Clarity _clarity=storeController.clarityStorage ?? Clarity.low;
   var buffered;
   void _bufferedListener() {
     try{
@@ -48,21 +48,31 @@ class _ControlMaskState extends State<ControlMask> with TickerProviderStateMixin
     _controller.addListener(_bufferedListener);
   }
   void _rewind() {
+    if(!_controller.value.isInitialized || _controller.value.position <= const Duration(seconds: 10)){
+      return;
+    }
     _controller.seekTo(_controller.value.position - const Duration(seconds: 10));
   }
 
   void _fastForward() {
+    if(!_controller.value.isInitialized || _controller.value.position >= _controller.value.duration - const Duration(seconds: 10)){
+      return;
+    }
     _controller.seekTo(_controller.value.position + const Duration(seconds: 10));
   }
   void _seekVideo(Duration duration) {
+    if(!_controller.value.isInitialized){
+      return;
+    }
     _controller.seekTo(duration);
   }
   void videoControl() {
-    setState(() {
+    if(!_controller.value.isInitialized){
+      return;
+    }
       _controller.value.isPlaying
           ? _controller.pause()
           : _controller.play();
-    });
   }
   @override
   void dispose() {

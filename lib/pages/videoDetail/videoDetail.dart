@@ -5,15 +5,16 @@ import 'package:qwara/api/subscribe/like.dart';
 import 'package:qwara/getX/StoreController.dart';
 import 'package:flutter/material.dart';
 import 'package:qwara/api/video/video.dart';
-import 'package:qwara/components/VideoView.dart';
-import 'package:contained_tab_bar_view/contained_tab_bar_view.dart';
+import 'package:qwara/components/video/VideoView.dart';
+import 'package:floating_tabbar/lib.dart';
 import 'package:crypto/crypto.dart';
 import 'package:qwara/constant.dart';
-import 'package:qwara/pages/videoDetail/comment.dart';
-import 'package:qwara/pages/videoDetail/profile.dart';
+import 'package:qwara/components/profile.dart';
+import 'package:qwara/pages/generalPage/CommentPage.dart';
 import 'package:responsive_builder/responsive_builder.dart';
 import 'package:qwara/components/SlidingPanel3Controller.dart';
 import 'package:get/get.dart';
+import 'package:sizer/sizer.dart';
 
 final storeController = Get.find<StoreController>();
 
@@ -29,39 +30,39 @@ class VideoDetail extends StatefulWidget {
   State<VideoDetail> createState() => _VideoDetail();
 }
 
-class _VideoDetail extends State<VideoDetail> {
+class _VideoDetail extends State<VideoDetail>  {
 
   final GlobalKey<VideoViewState> videoViewKey = GlobalKey<VideoViewState>();
 
   late double? _videoViewHeight=null;
 
-  final ScrollController _profileScrollController = ScrollController();
-  final ScrollController _commentScrollController = ScrollController();
-  late ScrollPhysics? _scrollPhysics = const NeverScrollableScrollPhysics();
+  final ScrollController _profileScrollController = ScrollController(
+    initialScrollOffset: 0.01,
+  );
+  final ScrollController _commentScrollController = ScrollController(
+    initialScrollOffset: 0.01
+  );
+  late ScrollPhysics? _scrollPhysics = null;
   bool pLisTouched = false;
   bool cLisTouched = false;
   bool isHorizontalSlide = false;
+  bool isNewer = storeController.detailPageVersion;
 
   void _changeVideoViewSize(PointerMoveEvent pointerMoveEvent) {
-    print("dragUpdate123: ${videoViewKey.currentState?.isPlaying}");
-
     // 判断滑动方向
     isHorizontalSlide = pointerMoveEvent.delta.dx.abs() > pointerMoveEvent.delta.dy.abs();
 
-    // 打印当前滑动方向
     if (isHorizontalSlide) {
       print("水平滑动");
+      setState(() {});
+      return;
     } else {
       print("垂直滑动");
     }
 
-    if(isHorizontalSlide){
-      setState(() {});
-      return;
-    }
-
 // 处理播放状态
-    if (videoViewKey.currentState?.isPlaying ?? false) {
+    if (!(videoViewKey.currentState?.vcInit ?? false) || (videoViewKey.currentState?.isPlaying ?? true)) {
+      print("播放状态");
       if(_scrollPhysics != null){
         _scrollPhysics = null; // 可滚动
       }
@@ -81,7 +82,7 @@ class _VideoDetail extends State<VideoDetail> {
     // print("_videoViewHeighttf: ${_profileScrollController.hasClients} ${_commentScrollController.hasClients}");
     // 获取两个 ScrollController 的 offset 值
     if (_profileScrollController.hasClients && pLisTouched) {
-      print("_profileScrollController hasClients");
+      print("_profileScrollController hasClients ${_profileScrollController.offset}");
       scrollOffset += _profileScrollController.offset;
     }
 
@@ -92,47 +93,123 @@ class _VideoDetail extends State<VideoDetail> {
 
     print("scrollOffset: $scrollOffset");
     // 暂停状态
-    if (scrollOffset == 0) {
-      print("情况一 暂停，offset==0$_videoViewHeight");
-      if(pointerMoveEvent.delta.dy < 0){
-        // 上拉
-        if(_videoViewHeight == 0 && _scrollPhysics != null){
-          _scrollPhysics = null;
-        }
-        print("上拉 ${_scrollPhysics == null}");
-        if(_scrollPhysics == null || _videoViewHeight != null){
-          _scrollPhysics ??= const NeverScrollableScrollPhysics();
-          _videoViewHeight = (_videoViewHeight! + pointerMoveEvent.delta.dy).clamp(0, screenHeight * 0.5);
-        }
-      }else{
-        _scrollPhysics ??= const NeverScrollableScrollPhysics();
-        // 下拉
-        if(_videoViewHeight == 0){
-          _videoViewHeight = null; // 设置为默认值
+    setState(() {
+      if (scrollOffset == 0) {
+        print("情况一 暂停，offset==0$_videoViewHeight");
+        if(pointerMoveEvent.delta.dy < 0){
+          // 上拉
+          if(_videoViewHeight == 0 && _scrollPhysics != null){
+            _scrollPhysics = null;
+          }
+          print("上拉 ${_scrollPhysics == null}");
+          if((_scrollPhysics != null || _videoViewHeight != null)&& _videoViewHeight != 0){
+            _scrollPhysics ??= const NeverScrollableScrollPhysics();
+            _videoViewHeight = (_videoViewHeight! + pointerMoveEvent.delta.dy).clamp(0, screenHeight * 0.5);
+          }
         }else{
-          _videoViewHeight = (_videoViewHeight! + pointerMoveEvent.delta.dy).clamp(0, screenHeight * 0.5);
+          _scrollPhysics ??= const NeverScrollableScrollPhysics();
+          // 下拉
+          if(_videoViewHeight == 0){
+            _videoViewHeight = null; // 设置为默认值
+          }else{
+            _videoViewHeight = (_videoViewHeight! + pointerMoveEvent.delta.dy).clamp(0, screenHeight * 0.5);
+          }
+        }
+      } else {
+        print("情况二 offset!=0");
+        if (pointerMoveEvent.delta.dy < 0) {
+          // 上拉
+          print("上拉 0001}");
+          if(_videoViewHeight! >0 ){
+            _scrollPhysics ??= const NeverScrollableScrollPhysics();
+            _videoViewHeight = (_videoViewHeight! + pointerMoveEvent.delta.dy).clamp(0, screenHeight * 0.5);
+          }
+        }else{
+          // 下拉
+          print("下拉 0001}");
+          if(_scrollPhysics != null){
+            _scrollPhysics = null; // 可滚动
+          }
         }
       }
-    } else {
-      print("情况二 ");
-      if (pointerMoveEvent.delta.dy < 0) {
-        // 上拉
-        print("上拉 0001}");
-        _scrollPhysics ??= const NeverScrollableScrollPhysics();
-        _videoViewHeight = (_videoViewHeight! + pointerMoveEvent.delta.dy).clamp(0, screenHeight * 0.5);
-      }else{
-        // 下拉
-        print("下拉 0001}");
-        if(_scrollPhysics != null){
-          _scrollPhysics = null; // 可滚动
-        }
-      }
+    });
+
+    // setState(() {});
+    return;
+  }
+
+  void _changeVideoViewSizeNewer(PointerMoveEvent pointerMoveEvent) {
+    if(_scrollPhysics != null){
+      _scrollPhysics = null; // 可滚动
     }
-    setState(() {});
+
+    // 判断滑动方向
+    isHorizontalSlide = pointerMoveEvent.delta.dx.abs() > pointerMoveEvent.delta.dy.abs();
+
+    if (isHorizontalSlide) {
+      print("水平滑动");
+      try{
+        _commentScrollController.jumpTo(_commentScrollController.offset+0.01);
+      }catch(e){
+        print(e);
+      }
+      try{
+        _profileScrollController.jumpTo(_profileScrollController.offset+0.01);
+      }catch(e){
+        print(e);
+      }
+      setState(() {});
+      return;
+    } else {
+      print("垂直滑动");
+    }
+// 处理播放状态
+    if (!(videoViewKey.currentState?.vcInit ?? false) || (videoViewKey.currentState?.isPlaying ?? true)) {
+      print("播放状态");
+
+      if (_videoViewHeight != null) {
+        _videoViewHeight = null; // 设置为默认值
+      }
+      setState(() {});
+      return;
+    }
+
+    double scrollOffset = 0.0;
+    if (_profileScrollController.hasClients && pLisTouched) {
+      print("_profileScrollController hasClients ${_profileScrollController.offset}");
+      scrollOffset += _profileScrollController.offset;
+    }
+
+    if (_commentScrollController.hasClients && cLisTouched) {
+      print("_commentScrollController hasClients ${_commentScrollController.offset}");
+      scrollOffset += _commentScrollController.offset;
+    }
+
+    // 暂停状态
+    // if (scrollOffset > 50) {
+      setState(() {
+        if(pointerMoveEvent.delta.dy < 0){
+          // 上拉
+          if(scrollOffset > 40.h){
+            _videoViewHeight ??= 0;
+          }
+
+        }else{
+          // 下拉
+          if(_videoViewHeight != null && scrollOffset == 0){
+            _videoViewHeight = null; // 设置为默认值
+          }
+        }
+      });
+    // }
+
+
+    // setState(() {});
     return;
   }
 
   void _toucheStatus(String type) {
+    print("touchStatus: $type");
     switch (type) {
       case "comment":
         cLisTouched = true;
@@ -152,9 +229,11 @@ class _VideoDetail extends State<VideoDetail> {
     super.initState();
     _getVideoUrls();
     _commentScrollController.addListener(() {
+      // print("commentScrollController: ${_commentScrollController.offset}");
       _toucheStatus("comment");
     });
     _profileScrollController.addListener(() {
+      // print("profileScrollController: ${_profileScrollController.offset}");
       _toucheStatus("profile");
     });
   }
@@ -177,7 +256,7 @@ class _VideoDetail extends State<VideoDetail> {
   }
 
   _getVideoUrls()  async {
-    try {
+    // try {
       await _getVideoDetail(widget.videoInfo['id']);
       String fileUrl = videoDetail['fileUrl'];
       print("fileUrl: $fileUrl");
@@ -198,14 +277,14 @@ class _VideoDetail extends State<VideoDetail> {
         print(e);
       }
 
-
       print(res);
       return res;
-    }catch (e) {
-      print(e);
-      _getVideoUrls();
-    }
+    // }catch (e) {
+    //   print(e);
+    //   _getVideoUrls();
+    // }
   }
+
 
   @override
   void dispose() {
@@ -230,9 +309,7 @@ class _VideoDetail extends State<VideoDetail> {
             )
 
         ),
-      body: Listener(
-        onPointerMove: _changeVideoViewSize,
-        child: Stack(
+      body: Stack(
           children: [
             Flex(
               direction: getValueForScreenType(
@@ -248,12 +325,12 @@ class _VideoDetail extends State<VideoDetail> {
             _buildSliverPanel(),
           ],
         ),
-      ),
     );
   }
 
   Widget _buildVideoProfile() {
     return Profile(
+      type: ProfileType.video,
       scrollPhysics: _scrollPhysics,
       // onDownload: _downloadVideo,
       scrollController: _profileScrollController,
@@ -269,21 +346,21 @@ class _VideoDetail extends State<VideoDetail> {
         if (isLiked) {
           await unlikeVideo(videoDetail['id']);
         }else {
-          await likeVideo(videoDetail['id'], storeController.userInfo);
+          await likeVideo(videoDetail['id'], storeController.userInfo ?? {});
         }
         await _getVideoDetail(widget.videoInfo['id']);
       },
       onSetPlaylist: () {
         slidingPanel3Controller.setPanel3State(Panel3State.CENTER);
       },
-      videoInfo: videoDetail,
-      fileUrls: videoUrls,
+      info: videoDetail,
+      files: videoUrls,
     );
   }
 
   Widget _buildVideoSection(bool isPortrait) {
     return Expanded(
-      flex: 2,
+      flex: 3,
       child: Column(
         children: [
           Container(
@@ -299,15 +376,18 @@ class _VideoDetail extends State<VideoDetail> {
             ),
           ),
           Flexible(
-            child: ScreenTypeLayout.builder(
-              mobile: (context) => OrientationLayoutBuilder(
-                portrait: (context) => Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: _buildTabBarView(),
+            child: Listener(
+              onPointerMove: isNewer ? _changeVideoViewSizeNewer : _changeVideoViewSize,
+              child: ScreenTypeLayout.builder(
+                mobile: (context) => OrientationLayoutBuilder(
+                  portrait: (context) => Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: _buildTabBarView(),
+                  ),
+                  landscape: (context) => _buildVideoProfile(),
                 ),
-                landscape: (context) => _buildVideoProfile(),
+                tablet: (context) => _buildVideoProfile(),
               ),
-              tablet: (context) => _buildVideoProfile(),
             ),
           ),
         ],
@@ -316,36 +396,50 @@ class _VideoDetail extends State<VideoDetail> {
   }
 
   Widget _buildTabBarView() {
-    return ContainedTabBarView(
-      tabs: const [
-        Center(child: Text('简介')),
-        Center(child: Text('评论')),
-      ],
-      tabBarViewProperties: TabBarViewProperties(
-        physics: isHorizontalSlide ? null : const NeverScrollableScrollPhysics()
-      ),
-      views: [
-        _buildVideoProfile(),
-        Comment(
-          scrollPhysics: _scrollPhysics,
-          scrollController: _commentScrollController,
-        )
-      ],
-    );
+    return TopTabBar(
+        onTap: (p0) {},
+        isScrollable: false,
+        children: [
+          TabItem(
+            title: const Text("简介"),
+            onTap: () {},
+            tab: _buildVideoProfile(),
+          ),
+          TabItem(
+            title: const Text("评论"),
+            onTap: () {},
+            tab: CommentPage(
+              scrollPhysics: _scrollPhysics,
+              scrollController: _commentScrollController,
+              getComments: (int page ) async {
+                return getVideoComments(widget.videoInfo['id'], page: page);
+              },),
+          ),
+        ],
+      );
   }
 
   Widget _buildCommentSection(bool isPortrait) {
     return Expanded(
-      flex: getValueForScreenType(context: context, mobile: (isPortrait ? 0 : 1), tablet: 1),
+      flex: getValueForScreenType(context: context, mobile: (isPortrait ? 0 : 2), tablet: 2),
       child: ScreenTypeLayout.builder(
         mobile: (context) => OrientationLayoutBuilder(
           portrait: (context) => const SizedBox.shrink(),
-          landscape: (context) => Comment(),
+          landscape: (context) => CommentPage(
+            getComments: (int page ) async {
+              return getVideoComments(widget.videoInfo['id'], page: page);
+            },),
         ),
-        tablet: (context) => Comment(),
+        tablet: (context) => CommentPage(
+          getComments: (int page ) async {
+            return getVideoComments(widget.videoInfo['id'], page: page);
+          },),
       ),
     );
   }
+
+
+
 
   Widget _buildSliverPanel() {
     return Align(
@@ -475,7 +569,7 @@ class _VideoDetail extends State<VideoDetail> {
                         fontSize: 14,
                         fontWeight: FontWeight.w400),
                   ),
-                  Spacer(),
+                  const Spacer(),
                   // LineCuttingHorizontal(colorLine: color_ededed),
                 ],
               ),

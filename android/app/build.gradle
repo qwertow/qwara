@@ -4,7 +4,11 @@ plugins {
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id "dev.flutter.flutter-gradle-plugin"
 }
-
+// 添加依赖项
+dependencies {
+    // 添加coreLibraryDesugaring的依赖
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.2.2'
+}
 android {
     namespace = "com.qwer.qwara"
     compileSdk = flutter.compileSdkVersion
@@ -13,6 +17,7 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
+        coreLibraryDesugaringEnabled true
     }
 
     kotlinOptions {
@@ -28,6 +33,7 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        multiDexEnabled true
     }
 
     buildTypes {

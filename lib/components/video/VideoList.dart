@@ -6,13 +6,21 @@ import 'package:skeletonizer/skeletonizer.dart';
 class VideoList extends StatelessWidget {
   const VideoList({
     super.key,
-    required this.items, required this.loading,
+    required this.items,
+    required this.loading,
+    this.scrollPhysics,
+    this.shrink=false, this.crossAxisCountMobile=2, this.crossAxisCountTablet=4,
+
   });
   final List items;
   final bool loading;
+  final ScrollPhysics? scrollPhysics;
+  final bool shrink;
+  final int crossAxisCountMobile;
+  final int crossAxisCountTablet;
   String getThumbnailUrl(int index) {
     if(items.isEmpty || items[index]["file"]==null){
-      return "https://123";
+      return "https:///fake";
     }
     var customThumbnail = items[index]["customThumbnail"];
     // print(customThumbnail.toString());
@@ -32,11 +40,13 @@ class VideoList extends StatelessWidget {
     return Skeletonizer(
       enabled: loading,
       child: MasonryGridView.count(
+        shrinkWrap: shrink,
+        physics: scrollPhysics,
           itemCount: _items.length,
           crossAxisCount: getValueForScreenType<int>(
             context: context,
-            mobile: 2,
-            tablet: 4,
+            mobile: crossAxisCountMobile,
+            tablet: crossAxisCountTablet,
           ),
           mainAxisSpacing: 4,
           crossAxisSpacing: 4,
@@ -44,7 +54,7 @@ class VideoList extends StatelessWidget {
             return InkWell(
               onTap: () {
                 print("Recommend Item $index clicked");
-                Navigator.pushNamed(context, "/detail",
+                Navigator.pushNamed(context, "/videoDetail",
                     arguments: _items[index]);
               },
               child: Card(
