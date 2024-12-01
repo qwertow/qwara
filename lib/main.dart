@@ -77,6 +77,11 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
      refreshAccessToken(false);
     });
   }
+  @override
+  didUpdateWidget(MyHomePage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    currUser=storeController.userInfo ?? {};
+  }
 
   Future<void> refreshAccessToken(bool ini) async {
     bool access=await getAccessToken();
@@ -112,6 +117,8 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
       drawer: const Drawer(
         child: DrawerView(),
       ),
+      endDrawer: Drawer(
+      ),
       appBar: AppBar(
         leading: Builder(builder: (BuildContext context) {
           return IconButton(
@@ -127,7 +134,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
           IconButton(
             icon: const Icon(Icons.chat_outlined),
             onPressed: () {
-              //TODO: settings page
+              //TODO: message page
             },
           ),
           IconButton(
@@ -227,9 +234,9 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                   _currentIndex = index;
                 });
               },
-              children: [
-                const Home(), // 页面1
-                const VideosPage(),
+              children: const [
+                Home(), // 页面1
+                VideosPage(),
                 ImagePage()// 页面2
               ],
             ),

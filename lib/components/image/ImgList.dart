@@ -33,7 +33,7 @@ class ImgList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final List _items = loading ? List.generate(10, (index) => {
+    final List _items = loading ? List<Map<String, dynamic>>.generate(10, (index) => {
       "thumbnail": {"id": "123","name": "Loading..."},
       "title": "Loading...","user": {"name": "Loading..."},
       "numLikes": 0, "file": {"id": "123"}}) : items;
@@ -51,7 +51,7 @@ class ImgList extends StatelessWidget {
             tablet: crossAxisCountTablet,
           ),
           mainAxisSpacing: 4,
-          crossAxisSpacing: 4,
+          // crossAxisSpacing: 4,
           itemBuilder: (context, index) {
             return InkWell(
               onTap: () {
@@ -77,7 +77,9 @@ class ImgList extends StatelessWidget {
                                 topLeft: Radius.circular(cardCircular), // 左上角圆角
                                 topRight: Radius.circular(cardCircular), // 右上角圆角
                               ),
-                              child:  Image.network(
+                              child:  Skeleton.replace(
+                                  height: 100,
+                                  child:Image.network(
                                   getThumbnailUrl(index),
                                   headers: const {
                                     "Referer": "https://www.iwara.tv/"
@@ -98,7 +100,7 @@ class ImgList extends StatelessWidget {
                                   errorBuilder: (ctx,err,stackTrace) => Image.asset(
                                     'assets/images/780.jfif',//默认显示图片
                                   )
-                              ),
+                              ) ),
                             ),
                             Container(
                               margin: const EdgeInsets.fromLTRB(5,5,5,0),

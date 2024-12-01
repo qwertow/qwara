@@ -68,6 +68,17 @@ Future<Map> getSubscribedVideos({ required int page, String rating = 'ecchi'})as
   // print(response.data.toString());
   return response.data;
 }
+//获取最爱视频
+Future<Map> getFavoritesVideos(int page)async {
+
+  final response=await dio.get(
+      '/favorites/videos',
+      queryParameters: {
+        'page': page-1,
+      }
+  );
+  return response.data;
+}
 
 //获取视频评论
 Future<Map<String, dynamic>> getVideoComments(String videoId, {required int page})async {

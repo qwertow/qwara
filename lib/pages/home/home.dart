@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:qwara/api/img/img.dart';
 import 'package:qwara/api/video/video.dart';
+import 'package:qwara/components/exception/TimeoutPage.dart';
 import 'package:qwara/components/image/ImgList.dart';
 import 'package:qwara/components/video/VideoList.dart';
-import 'package:qwara/api/user/user.dart';
 import 'package:qwara/EventBus/EventBus.dart';
 import 'package:qwara/components/pager.dart';
-
+import 'package:qwara/getX/StoreController.dart';
 import '../../components/Mydropdown.dart';
+
 class Home extends StatefulWidget {
   const Home({super.key});
 
@@ -22,9 +23,10 @@ class _HomeState extends State<Home> with AutomaticKeepAliveClientMixin {
   late int currentPage_img=1;
   // 假设有一些示例数据
   late List videoItems = [];
-  late List imgItems = [];
+  late List<Map<String, dynamic>> imgItems = [];
   late bool videoListLoadings=false;
   late bool imgListLoadings=false;
+  bool timeout=false;
 
   bool _isVideo=true;
 
@@ -72,6 +74,11 @@ class _HomeState extends State<Home> with AutomaticKeepAliveClientMixin {
     eventBus.on<UpdateAccessTokenEvent>().listen((event) {
       getData();
     });
+    eventBus.on<TimeOutEvent>().listen((event) {
+      setState(() {
+        timeout=true;
+      });
+    });
   }
 
   @override
@@ -85,7 +92,14 @@ class _HomeState extends State<Home> with AutomaticKeepAliveClientMixin {
         body: Column(
           children: [
             Flexible(
-                child: _isVideo? VideoList(items: videoItems,loading: videoListLoadings):ImgList(items: imgItems, loading: imgListLoadings)
+                child: !timeout ? _isVideo ? VideoList(items: videoItems,loading: videoListLoadings):ImgList(items: imgItems, loading: imgListLoadings) :  TimeoutPage(
+                  onRetry: (){
+                    setState(() {
+                      timeout=false;
+                    });
+                    getData();
+                  },
+                )
             ),
             Pager(currentPage: _isVideo? currentPage_video:currentPage_img, totalPages: _isVideo? totalPages_video:totalPages_img,
                 pageChanged: (page){
@@ -115,7 +129,7 @@ class _HomeState extends State<Home> with AutomaticKeepAliveClientMixin {
                       value: true,
                       child: Row(
                         children: [
-                          Icon(Icons.video_library_rounded, color: Colors.black),
+                          Icon(Icons.video_library_outlined, color: Colors.black),
                           SizedBox(width: 8),
                           Text('视频', style: TextStyle(color: Colors.black)),
                         ],
@@ -125,7 +139,7 @@ class _HomeState extends State<Home> with AutomaticKeepAliveClientMixin {
                       value: false,
                       child: Row(
                         children: [
-                          Icon(Icons.image_rounded, color: Colors.black),
+                          Icon(Icons.image_outlined, color: Colors.black),
                           SizedBox(width: 8),
                           Text('图片', style: TextStyle(color: Colors.black)),
                         ],

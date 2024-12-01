@@ -1,25 +1,39 @@
-import 'package:qwara/getX/StoreController.dart';
 import 'package:get/get.dart';
 import 'package:qwara/utils/dioRequest.dart';
+import 'package:qwara/getX/StoreController.dart';
 
-final storeController = Get.find<StoreController>();
 
 Future<void> login({required String username, required String password}) async {
+  // await storeController.setToken(null);
+  // await storeController.setAccessToken(null);
+  print('login username: ${storeController.token}, password: ${storeController.accessToken}');
+  dio.options.headers['Authorization'] = null;
   final response=await dio.post('/user/login', data: {
     'email': username,
     'password': password
   });
-  storeController.setToken(response.data['token']);
-  await getAccessToken();
-  await getUserInfo();
-  Get.offAndToNamed('/home');
-  return ;
+  if(response.statusCode== 200){
+    await storeController.setToken(response.data['token']);
+    print('login success');
+    if(await getAccessToken()){
+      print('get access token success');
+      if(await getUserInfo()) {
+        print('get user info success');
+        Get.offAndToNamed('/home');
+      }
+    }
+    return ;
+  }
+
 }
 
 Future<bool> getAccessToken() async {
   dio.options.headers['Authorization'] = 'Bearer ${storeController.token}';
   final response = await dio.post('/user/token');
-  storeController.setAccessToken(response.data['accessToken']);
+  print('get access token response: ${response.data}');
+  await storeController.setAccessToken(response.data['accessToken']);
+  dio.options.headers['Authorization'] = 'Bearer ${storeController.accessToken}';
+
   if (response.statusCode == 200) {
     return true;
   } else {
@@ -28,14 +42,15 @@ Future<bool> getAccessToken() async {
   }
 }
 
-Future<void> getUserInfo() async {
+Future<bool> getUserInfo() async {
+  // dio.options.headers['Authorization'] = 'Bearer $accessToken';
   bool success = false;
   int retryCount = 0;
   while (!success) {
     try {
       final response = await dio.get('/user');
-      storeController.setUserInfo(response.data);
       if(response.statusCode == 200){
+        await storeController.setUserInfo(response.data);
         success = true; // 请求成功，退出循环
       }
     } catch (e) {
@@ -55,6 +70,7 @@ Future<void> getUserInfo() async {
       }
     }
   }
+  return success;
 }
 
 

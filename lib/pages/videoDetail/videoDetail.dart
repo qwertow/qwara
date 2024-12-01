@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:qwara/api/subscribe/follow.dart';
 import 'package:qwara/api/subscribe/like.dart';
+import 'package:qwara/api/subscribe/playList.dart';
 import 'package:qwara/getX/StoreController.dart';
 import 'package:flutter/material.dart';
 import 'package:qwara/api/video/video.dart';
@@ -13,10 +14,10 @@ import 'package:qwara/components/profile.dart';
 import 'package:qwara/pages/generalPage/CommentPage.dart';
 import 'package:responsive_builder/responsive_builder.dart';
 import 'package:qwara/components/SlidingPanel3Controller.dart';
-import 'package:get/get.dart';
 import 'package:sizer/sizer.dart';
+import 'package:skeletonizer/skeletonizer.dart';
+import 'package:get/get.dart';
 
-final storeController = Get.find<StoreController>();
 
 class VideoDetail extends StatefulWidget {
   const VideoDetail({
@@ -346,12 +347,13 @@ class _VideoDetail extends State<VideoDetail>  {
         if (isLiked) {
           await unlikeVideo(videoDetail['id']);
         }else {
-          await likeVideo(videoDetail['id'], storeController.userInfo ?? {});
+          await likeVideo(videoDetail['id'], storeController.userInfo?["user"] ?? {});
         }
         await _getVideoDetail(widget.videoInfo['id']);
       },
       onSetPlaylist: () {
         slidingPanel3Controller.setPanel3State(Panel3State.CENTER);
+        _getPlaylist();
       },
       info: videoDetail,
       files: videoUrls,
@@ -439,154 +441,184 @@ class _VideoDetail extends State<VideoDetail>  {
   }
 
 
+  final List<Map<String, dynamic>> playLists = List.generate(10, (i) {
+    return {
+      'title': 'title$i',
+    };
+  });
+  bool playListLoading = false;
+  bool upLoading = false;
 
+  Future<void> _getPlaylist() async {
+    if(!upLoading){
+      setState(() {
+        playListLoading = true;
+      });
+    }
 
+    final List<Map<String, dynamic>> res = await getPlayListByVideoId(widget.videoInfo['id']);
+    setState(() {
+      playLists.clear();
+      playLists.addAll(res);
+      playListLoading = false;
+    });
+    print(res);
+  }
+
+  Future<void> _addPlayList(String pid, String vId) async {
+    setState(() {
+      upLoading = true;
+    });
+    await addVideoToPlayList(pid, vId);
+    await _getPlaylist();
+    setState(() {
+      upLoading = false;
+    });
+  }
+  Future<void> _removePlayList(String pid, String vId) async {
+    setState(() {
+      upLoading = true;
+    });
+    await removeVideoFromPlayList(pid, vId);
+    await _getPlaylist();
+    setState(() {
+      upLoading = false;
+    });
+  }
+
+  Future<void> _createPlayList(String title) async {
+    await createPlayList(title);
+    await _getPlaylist();
+  }
+
+  TextEditingController playListController = TextEditingController();
   Widget _buildSliverPanel() {
     return Align(
       alignment: AlignmentDirectional.bottomCenter,
-      child: SliverPanel3View(
-        heightClose: 0,
-        heightCenter: 330,
-        heightOpen: 680,
-        headWidget: headView(),
-        bodyWidget: (ScrollController sc, ScrollPhysics? physics) {
-          return BodyView(sc, physics);
-        },
-        sliverPanel3Controller: slidingPanel3Controller,
-        initPanel3state: Panel3State.CLOSE,
-      ),
-    );
+      child: Container(
+        decoration: const BoxDecoration(
+            // color: Colors.white,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(10.0),
+              topRight: Radius.circular(10.0),
+            )
+        ),
+        margin: const EdgeInsets.symmetric(horizontal: 10.0),
+        // padding: const EdgeInsets.symmetric(horizontal: 10.0),
+        child: SliverPanel3View(
+          backColor: Colors.white,
+          heightClose: 0,
+          heightCenter: 40.h,
+          heightOpen: 60.h,
+          headWidget: headView(),
+          bodyWidget: (ScrollController sc, ScrollPhysics? physics) {
+            return BodyView(sc, physics);
+          },
+          sliverPanel3Controller: slidingPanel3Controller,
+          initPanel3state: Panel3State.CLOSE,
+        ),
+      ));
   }
-  Widget headView() {
-    return Container(
-      height: 108,
-      decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(8),
-            topRight: Radius.circular(8),
-          )),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const SizedBox(
-            height: 12,
-          ),
-          InkWell(
-            onTap: (){
-              slidingPanel3Controller.setPanel3State(Panel3State.EXIT);
-              // LocationPluginUtils.get().then((value) {
-              //   SGMLogger.info(value);
-              // });
-            },
-            child: Container(
-              width: double.infinity,
-              height: 40,
-              alignment: AlignmentDirectional.center,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.search , color: Colors.grey.withAlpha(80),size: 20,),
-                  const SizedBox(
-                    width: 5,
-                  ),
-                  Text(
-                    'Search',
-                    style: TextStyle(
-                        color: Colors.grey.withAlpha(80),
-                        fontSize: 14,
-                        fontWeight: FontWeight.w400),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(
-            height: 40,
-            child: Row(
-              children: [
-                Icon(Icons.ac_unit , color: Colors.redAccent ,size: 20,),
-                SizedBox(
-                  width: 8,
-                ),
-                Expanded(
-                  child: Text(
-                    '惊喜来袭！！！ 森林公园免门票 快冲...',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                        color: Colors.redAccent,
-                        height: 1.2,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w400),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-  Widget BodyView(ScrollController sc ,  ScrollPhysics? physics) {
 
+
+  Widget headView() {
+    return Column(
+      children: [
+         Divider(
+            // height: 2,
+            thickness: 5,
+            indent: 35.w,
+            endIndent: 35.w,
+        ),
+        Container(
+          color: Colors.white,
+          padding: const EdgeInsets.symmetric(horizontal: 10.0),
+          child: Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: playListController,
+                  decoration: const InputDecoration(
+                    hintText: 'title',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+              ),
+              // const SizedBox(width: 8.0),
+              IconButton(
+                icon: const Icon(Icons.add),
+                onPressed: () {
+                  Get.dialog(AlertDialog(
+                    title: const Text('创建播放列表'),
+                    content: Text(playListController.text),
+                    // titleTextStyle: const TextStyle(fontSize: 20),
+                    actions: [
+                      TextButton(
+                        child: const Text('取消'),
+                        onPressed: () {
+                          Get.back();
+                        },
+                      ),
+                      TextButton(
+                        child: const Text('创建'),
+                        onPressed: () {
+                          if (playListController.text.trim().isEmpty) {
+                            return;
+                          }
+                          _createPlayList(playListController.text.trim());
+                          Get.back();
+                          playListController.clear();
+                        },
+                      ),
+                    ],
+                  ));
+                },
+              ),
+            ],
+          ),
+        )
+      ],
+    );
+  }
+
+  Widget BodyView(ScrollController sc ,  ScrollPhysics? physics) {
     // return Container(height: 999,width: 380, color: Colors.yellowAccent,);
 
     Widget _itemView(int i) {
-      return Container(
-        color: Colors.white,
-        height: 94,
-        child: Row(
-          children: [
-            const Icon(Icons.add_a_photo_rounded , color: Colors.orange, size: 66,),
-            const SizedBox(
-              width: 18,
-            ),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    '森林公园游乐场',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500),
-                  ),
-                  const SizedBox(
-                    height: 8,
-                  ),
-                  Text(
-                    '景点热度🔥 610$i',
-                    style: TextStyle(
-                        color: Colors.grey.withAlpha(80),
-                        fontSize: 14,
-                        fontWeight: FontWeight.w400),
-                  ),
-                  const Spacer(),
-                  // LineCuttingHorizontal(colorLine: color_ededed),
-                ],
-              ),
-            ),
-          ],
+      return Card(
+        color: Colors.pink[50],
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: ListTile(
+          title: Text(
+            playLists[i]['title'],
+          ),
+          trailing: Skeletonizer(
+            enabled: upLoading,
+              child: Switch(
+            value: playLists[i]['added']?? false,
+            onChanged: (bool newValue) {
+              if (newValue) {
+                _addPlayList(playLists[i]['id'], widget.videoInfo['id']);
+              }else {
+                _removePlayList(playLists[i]['id'], widget.videoInfo['id']);
+              }
+            },
+          )),
         ),
       );
     }
 
-    return ListView.builder(
+    return Skeletonizer(
+      enabled: playListLoading,
+        child: ListView.builder(
       controller: sc,
       physics: physics,
-      padding: EdgeInsets.zero,
-      itemCount: 19,
-      itemBuilder: (BuildContext context, int i) {
-        return _itemView(i);
+      itemCount: playLists.length,
+      itemBuilder: (context, index) {
+        return _itemView(index);
       },
-    );
+    ));
   }
 }

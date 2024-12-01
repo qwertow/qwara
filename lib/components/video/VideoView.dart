@@ -5,12 +5,9 @@ import 'package:flutter/services.dart';
 import 'package:qwara/EventBus/EventBus.dart';
 import 'package:video_player/video_player.dart';
 import 'package:qwara/getX/StoreController.dart';
-import 'package:get/get.dart';
 import 'package:qwara/pages//videoDetail/ControlMask.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 import 'package:lifecycle/lifecycle.dart';
-
-final storeController = Get.find<StoreController>();
 
 class VideoView extends StatefulWidget {
   const VideoView({super.key, required this.urlList, this.height, this.width});
@@ -242,7 +239,7 @@ class VideoViewState extends State<VideoView>  with LifecycleAware, LifecycleMix
             aspectRatio: _controller.value.aspectRatio,
             child: LayoutBuilder(
               builder: (context, constraints) {
-                final aspectRatio = _controller.value.aspectRatio;
+                // final aspectRatio = _controller.value.aspectRatio;
                 final mwidth = constraints.maxWidth;
                 final mheight = constraints.maxHeight;
                 WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -250,7 +247,7 @@ class VideoViewState extends State<VideoView>  with LifecycleAware, LifecycleMix
                     setState(() {
                       videoWidth = mwidth; // 更新宽度
                       print("videoWidth: $videoWidth");
-                      print("videoWidth111: ${(videoWidth ?? 0) /aspectRatio}");
+                      // print("videoWidth111: ${(videoWidth ?? 0) /aspectRatio}");
                     });
                   }
                   if (videoHeight!= mheight) {
@@ -260,7 +257,7 @@ class VideoViewState extends State<VideoView>  with LifecycleAware, LifecycleMix
                     });
                   }
                   print("videoHeight: $videoHeight");
-                  print("videoWidth222: ${(videoWidth ?? 0) / aspectRatio}");
+                  // print("videoWidth222: ${(videoWidth ?? 0) / aspectRatio}");
                 });
                 return  VideoPlayer(_controller);
               },
@@ -328,7 +325,7 @@ class VideoViewState extends State<VideoView>  with LifecycleAware, LifecycleMix
                 },
               ):Container(
                 height: videoHeight ?? 0,
-                // width: videoWidth,
+                width: 100.w,
                 color: Colors.transparent,
               ),
           ),

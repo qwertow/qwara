@@ -44,7 +44,11 @@ android {
         }
     }
 }
-
+//java {
+//    toolchain {
+//        languageVersion = JavaLanguageVersion.of(19)
+//    }
+//}
 flutter {
     source = "../.."
 }

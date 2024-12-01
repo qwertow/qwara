@@ -20,16 +20,22 @@ class _DrawerView extends State<DrawerView> {
   @override
   Widget build(BuildContext context) {
     return ListView(
-      children: [
-        MyCard(),
+      children:  [
+        const MyCard(),
         // const SizedBox(height: 10),
-        const ListItem(
-          lead: Icon(Icons.favorite_border),
-          text: Text("最爱"),
+        ListItem(
+          lead: const Icon(Icons.favorite_border),
+          text: const Text("最爱"),
+          onItemTap: (){
+            Get.toNamed('/favorites');
+          },
         ),
-        const ListItem(
-          lead: Icon(Icons.video_library_outlined),
-          text: Text("播单"),
+        ListItem(
+          lead: const Icon(Icons.video_library_outlined),
+          text: const Text("播单"),
+          onItemTap:(){
+            Get.toNamed('/toPlaylist');
+          },
         ),
         const ListItem(
           lead: Icon(Icons.download_outlined),
@@ -43,21 +49,22 @@ class _DrawerView extends State<DrawerView> {
           lead: Icon(Icons.settings_outlined),
           text: Text("设置"),
         ),
-        TextButton(onPressed: () async {
-          if (await getAccessToken()){
-            Get.snackbar("提示", "更新AccessToken成功");
-            eventBus.fire(UpdateAccessTokenEvent(true));
-          }else{
-            Get.snackbar("提示", "更新AccessToken失败,请重新登录");
-          }
-        }, child: const Text("更新AccessToken")),
-        TextButton(onPressed: (){
-          logout();
-        }, child: const Text("退出登录 fake")),
-        TextButton(onPressed: () {
-          Fluttertoast.showToast(msg: "show toast test");
-        }, child: const Text("show toast test"))
+        // TextButton(onPressed: () async {
+        //   if (await getAccessToken()){
+        //     Get.snackbar("提示", "更新AccessToken成功");
+        //     eventBus.fire(UpdateAccessTokenEvent(true));
+        //   }else{
+        //     Get.snackbar("提示", "更新AccessToken失败,请重新登录");
+        //   }
+        // }, child: const Text("更新AccessToken")),
+        // TextButton(onPressed: (){
+        //   logout();
+        // }, child: const Text("退出登录 fake")),
+        // TextButton(onPressed: () {
+        //   Fluttertoast.showToast(msg: "show toast test");
+        // }, child: const Text("show toast test"))
       ],
     );
   }
+
 }

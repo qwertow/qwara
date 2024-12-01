@@ -1,48 +1,78 @@
 import 'package:flutter/material.dart';
+import 'package:qwara/api/subscribe/follow.dart';
 import 'package:qwara/getX/StoreController.dart';
 import 'package:get/get.dart' hide Response;
 
 final storeController = Get.find<StoreController>();
 
-class MyCard extends StatelessWidget{
-  MyCard({
+class MyCard extends StatefulWidget {
+  const MyCard({
     super.key,
     this.title,
     this.subtitle,
-    this.children
+    this.children,
   });
 
   final String? title;
   final String? subtitle;
   final List<Widget>? children;
 
+  @override
+  State<MyCard> createState() => _MyCardState();
+}
+
+class _MyCardState extends State<MyCard> {
   final Map<String, dynamic> _userInfo = storeController.userInfo ?? {};
+
+  String _userId = '';
+
+  Map _follower = {};
+  Map _following = {};
+  Map _friends = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _userId = _userInfo['user']?['id'] ?? '';
+    _getFollow();
+  }
+
+  @override
+  dispose() {
+    super.dispose();
+  }
+
+  Future<void> _getFollow() async {
+    _following=storeController.following ?? await getFollowing(_userId,limit: 6);
+    _friends= storeController.friends ?? await getFriends(_userId);
+    setState(() {});
+    _follower=await getFollowers(_userId,limit: 6);
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
-
     return Card(
       color: Colors.white,
-      // shadowColor: Colors.blueGrey,
       shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20)
+        borderRadius: BorderRadius.circular(20),
       ),
       child: Column(
         children: <Widget>[
           ListTile(
             leading: InkWell(
-              onTap: (){
-                if(storeController.token== null){
+              onTap: () {
+                if (storeController.token == null) {
                   Get.toNamed('/login');
-                }else{
-                  Get.toNamed('/userProfile',arguments: _userInfo['user'] ?? {});
+                } else {
+                  Get.toNamed('/userProfile', arguments: _userInfo['user'] ?? {});
                 }
               },
               child: CircleAvatar(
                 radius: 40,
                 child: ClipOval(
                   child: Image.network(
-                    'https://i.iwara.tv/image/avatar/${_userInfo['user']?['avatar']['id'] }/${_userInfo['user']?['avatar']['name']}',
+                    'https://i.iwara.tv/image/avatar/${_userInfo['user']?['avatar']['id']}/${_userInfo['user']?['avatar']['name']}',
                     headers: const {
                       'Referer': "https://www.iwara.tv/",
                     },
@@ -65,24 +95,36 @@ class MyCard extends StatelessWidget{
           Container(
             margin: const EdgeInsets.only(bottom: 5),
             padding: const EdgeInsets.symmetric(horizontal: 5),
-            child: const Row(
+            child: Row(
               children: [
                 Expanded(
                   flex: 1,
                   child: InfoCard(
-                    name: "粉丝",
+                    name: "关注",
+                    num: _following['count']?? 0,
+                    onTapFunction: (){
+                      Get.toNamed('/followPage',arguments: 0);
+                    },
                   ),
                 ),
                 Expanded(
                   flex: 1,
                   child: InfoCard(
-                    name: "关注",
+                    name: "粉丝",
+                    num: _follower['count']?? 0,
+                    onTapFunction: (){
+                      Get.toNamed('/followPage',arguments: 1);
+                    },
                   ),
                 ),
                 Expanded(
                   flex: 1,
                   child: InfoCard(
                     name: "好友",
+                    num: _friends['count']?? 0,
+                    onTapFunction: (){
+                      Get.toNamed('/followPage',arguments: 2);
+                    },
                   ),
                 ),
               ],
@@ -92,6 +134,7 @@ class MyCard extends StatelessWidget{
       ),
     );
   }
+
 }
 
 
@@ -99,12 +142,11 @@ class InfoCard extends StatelessWidget {
   const InfoCard({
     super.key,
     this.num=0,
-    this.name='null',
-    this.onItemTap,
+    this.name='null', this.onTapFunction,
   });
   final int? num;
   final String? name;
-  final Function? onItemTap;
+  final Function()? onTapFunction;
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -115,11 +157,7 @@ class InfoCard extends StatelessWidget {
         margin: const EdgeInsets.only(left: 2,right: 2),
         // height: 50,
         child: InkWell(
-          onTap: () {
-            if (onItemTap != null) {
-              onItemTap!();
-            }
-          },
+          onTap: onTapFunction,
           child: ListTile(
             title: Text(num.toString()),
             subtitle: Text(name as String),

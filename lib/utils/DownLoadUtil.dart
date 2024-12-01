@@ -2,7 +2,6 @@
 import 'dart:io';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:flutter/material.dart';
-import 'package:skeletonizer/skeletonizer.dart';
 import 'package:get/get.dart' hide Response;
 import 'package:qwara/utils/dioRequest.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';

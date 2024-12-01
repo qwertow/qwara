@@ -53,16 +53,10 @@ class _CommentPageState extends State<CommentPage> with AutomaticKeepAliveClient
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return Stack(
+    return Column(
       children: [
-        CommentList(commentItems: comments, loading: commentsLoading, scrollPhysics: widget.scrollPhysics, scrollController: widget.scrollController),
-        Align(
-          alignment: AlignmentDirectional.bottomCenter,
-          child: Container(
-            color: Colors.white,
-            child: Pager(currentPage: currentCommentPage, pageChanged: pageChanged, totalPages:totalCommentPages),
-          ),)
-
+        Flexible(child: CommentList(commentItems: comments, loading: commentsLoading, scrollPhysics: widget.scrollPhysics, scrollController: widget.scrollController)),
+        Pager(currentPage: currentCommentPage, pageChanged: pageChanged, totalPages:totalCommentPages),
       ],
     );
   }

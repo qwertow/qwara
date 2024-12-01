@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:qwara/api/img/img.dart';
+import 'package:qwara/components/exception/TimeoutPage.dart';
 import 'package:qwara/components/image/ImgList.dart';
+import '../../EventBus/EventBus.dart';
 import '../../components/Mydropdown.dart';
 import '../../components/pager.dart';
 import '../../enum/Enum.dart';
 class ImagePage extends StatefulWidget {
+  const ImagePage({super.key});
+
   @override
   State<StatefulWidget> createState() => _ImagePageState();
 }
@@ -14,9 +18,9 @@ class _ImagePageState extends State<ImagePage> with AutomaticKeepAliveClientMixi
   late int currentPage=1;
   late SortType _sortType=SortType.date;
   late bool videoListLoadings=false;
+  bool timeout=false;
 
-  // 假设有一些示例数据
-  late List items = [];
+  late List<Map<String, dynamic>> items = [];
 
   getData() async {
     setState(() {
@@ -29,7 +33,7 @@ class _ImagePageState extends State<ImagePage> with AutomaticKeepAliveClientMixi
     setState(() {
       totalPages=(res["count"]/res["limit"]).ceil();
       items.clear();
-      items.addAll(res["results"]);
+      items.addAll(res["results"].cast<Map<String, dynamic>>());
       videoListLoadings=false;
     });
     // print(res);
@@ -45,6 +49,11 @@ class _ImagePageState extends State<ImagePage> with AutomaticKeepAliveClientMixi
   @override
   void initState() {
     super.initState();
+    eventBus.on<TimeOutEvent>().listen((event) {
+      setState(() {
+        timeout=true;
+      });
+    });
     getData();
   }
   IconData _getIconForSortType(SortType sortType) {
@@ -78,7 +87,15 @@ class _ImagePageState extends State<ImagePage> with AutomaticKeepAliveClientMixi
         body: Column(
           children: [
             Flexible(
-                child: ImgList(items: items,loading:  videoListLoadings,)
+                child: !timeout?ImgList(items: items,loading:  videoListLoadings,)
+                    :TimeoutPage(
+                  onRetry: (){
+                    setState(() {
+                      timeout=false;
+                    });
+                    getData();
+                  },
+                )
             ),
             Pager(currentPage: currentPage, pageChanged: (page){
               setState(() {
@@ -113,7 +130,14 @@ class _ImagePageState extends State<ImagePage> with AutomaticKeepAliveClientMixi
                 style: const TextStyle(color: Colors.black), // 字体颜色
               ),)
           ],
-        )
+        ),
+      floatingActionButton: FloatingActionButton(
+          backgroundColor: Colors.transparent,
+          onPressed: () {
+            Scaffold.of(context).openEndDrawer();
+          }, child: const Icon(Icons.tag)
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endTop,
     );
   }
 }

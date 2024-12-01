@@ -17,7 +17,6 @@ class _ProfileImagesState extends State<ProfileImages> with AutomaticKeepAliveCl
 
   late bool videoListLoadings=false;
 
-  // 假设有一些示例数据
   late List items = [];
 
   getData() async {

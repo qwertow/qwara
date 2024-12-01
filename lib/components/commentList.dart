@@ -25,8 +25,8 @@ class CommentList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final List _items = loading ? List.generate(10, (index) => {
-      'user': {"name": '123',"username": '123',"avatar": null,
-        "body": '123',"updatedAt": '123'}}
+      'user': {"name": BoneMock.name,"username": BoneMock.fullName,"avatar": null,
+        "body": '123',"updatedAt": BoneMock.time}}
     ) : commentItems;
     // print(_items);
     return Skeletonizer(
@@ -53,7 +53,7 @@ class CommentList extends StatelessWidget {
                       child: CircleAvatar(
                         radius: 20,
                         child: ClipOval(
-                          child: Image.network(
+                          child: Skeleton.replace(child: Image.network(
                             'https://i.iwara.tv/image/avatar/${comment['user']?['avatar']?['id'] }/${comment['user']?['avatar']?['name']}',
                             headers: const {
                               'Referer': "https://www.iwara.tv/",
@@ -66,7 +66,7 @@ class CommentList extends StatelessWidget {
                                 fit: BoxFit.cover,
                               );
                             },
-                          ),
+                          )),
                         ),
                       ),
                     ),

@@ -6,6 +6,15 @@ allprojects {
 //        maven { url 'https://maven.aliyun.com/repository/jcenter' }
 //        maven { url 'https://maven.aliyun.com/repository/public' }
     }
+//    // 添加这行解决报错
+//    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+//        kotlinOptions.jvmTarget = "17"
+//    }
+//
+//    // 添加这行解决报错
+//    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KaptGenerateStubs).configureEach {
+//        kotlinOptions.jvmTarget = "17"
+//    }
 }
 
 rootProject.buildDir = "../build"

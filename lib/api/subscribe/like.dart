@@ -1,6 +1,8 @@
 import 'package:qwara/utils/dioRequest.dart';
 
 Future<dynamic> likeVideo(String videoId,Map<String, dynamic> userInfo) async {
+  print("likeVideo $videoId $userInfo");
+  // dio.options.headers['Authorization'] = 'Bearer $accessToken';
   var response = await dio.post('/video/$videoId/like',
       data: {
         'user': userInfo,
@@ -16,6 +18,7 @@ Future<void> unlikeVideo(String videoId) async {
 }
 
 Future<dynamic> likeImage(String imgId,Map<String, dynamic> userInfo) async {
+  print("likeImage $imgId $userInfo");
   var response = await dio.post('/image/$imgId/like',
       data: {
         'user': userInfo,

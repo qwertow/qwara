@@ -6,6 +6,9 @@ import 'package:qwara/components/pager.dart';
 
 import 'package:qwara/enum/Enum.dart';
 
+import 'package:qwara/EventBus/EventBus.dart';
+import 'package:qwara/components/exception/TimeoutPage.dart';
+
 class VideosPage extends StatefulWidget {
   const VideosPage({super.key});
 
@@ -19,6 +22,7 @@ class _VideosPageState extends State<VideosPage> with AutomaticKeepAliveClientMi
   late int currentPage=1;
   late SortType _sortType=SortType.date;
   late bool videoListLoadings=false;
+  bool timeout=false;
 
   // 假设有一些示例数据
   late List items = [];
@@ -50,6 +54,11 @@ class _VideosPageState extends State<VideosPage> with AutomaticKeepAliveClientMi
   @override
   void initState() {
     super.initState();
+    eventBus.on<TimeOutEvent>().listen((event) {
+      setState(() {
+        timeout=true;
+      });
+    });
     getData();
   }
   IconData _getIconForSortType(SortType sortType) {
@@ -72,18 +81,27 @@ class _VideosPageState extends State<VideosPage> with AutomaticKeepAliveClientMi
   // 保持页面状态
   bool get wantKeepAlive => true;
 
+  final List<String> categories = ['电影', '综艺', '动漫', '少儿'];
+  // final List<String> genres = ['古装', '都市', '言情', '武侠', '战争', '青春'];
+  // final List<String> regions = ['内地', '美国', '韩国', '香港', '台湾', '日本'];
+  final List<String> years = ['2024', '2023', '2022', '2021', '2020', '2019'];
   @override
   Widget build(BuildContext context) {
     super.build(context);
     const sortTypes = SortType.values;
     return Scaffold(
-      // appBar: AppBar(
-      //   title: const Text('Recommend Page'),
-      // ),
       body: Column(
         children: [
           Flexible(
-            child: VideoList(items: items,loading:  videoListLoadings,)
+            child:!timeout? VideoList(items: items,loading:  videoListLoadings,)
+                :TimeoutPage(
+              onRetry: (){
+                setState(() {
+                  timeout=false;
+                });
+                getData();
+              },
+            )
           ),
           Pager(currentPage: currentPage, pageChanged: (page){
             setState(() {
@@ -116,9 +134,20 @@ class _VideosPageState extends State<VideosPage> with AutomaticKeepAliveClientMi
             // iconEnabledColor: Colors.blue, // 下拉箭头的颜色
             underline: Container(), // 隐藏下划线
             style: const TextStyle(color: Colors.black), // 字体颜色
-          ),)
+          ),),
+
         ],
-      )
+      ),
+
+        floatingActionButton: FloatingActionButton(
+          backgroundColor: Colors.transparent,
+            onPressed: () {
+              Scaffold.of(context).openEndDrawer();
+            }, child: const Icon(Icons.tag)
+        ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endTop,
+      // floatingActionButtonAnimator: FloatingActionButtonAnimator.scaling,
     );
   }
 }
+

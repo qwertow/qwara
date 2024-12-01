@@ -31,7 +31,7 @@ class SliverPanel3View extends StatefulWidget {
   final SliverPanel3Controller? sliverPanel3Controller; //控制器
 
   const SliverPanel3View(
-      {Key? key,
+      {super.key,
         this.heightOpen = 600,
         this.heightCenter = 360,
         this.heightClose = 100,
@@ -39,15 +39,14 @@ class SliverPanel3View extends StatefulWidget {
         required this.bodyWidget,
         this.sliverPanel3Controller,
         this.initPanel3state = Panel3State.CENTER,
-        this.backColor = Colors.transparent})
-      : super(key: key);
+        this.backColor = Colors.transparent});
 
   @override
   State<SliverPanel3View> createState() => _SliverPanel3ViewState();
 }
 
 
-class _SliverPanel3ViewState extends State<SliverPanel3View> {
+class _SliverPanel3ViewState extends State<SliverPanel3View> with AutomaticKeepAliveClientMixin {
   double heightClose = 100;
   double heightCenter = 360;
   double heightOpen = 600;
@@ -179,4 +178,7 @@ class _SliverPanel3ViewState extends State<SliverPanel3View> {
       child: Container(child: widget.bodyWidget!(_sc , _physics),),
     );
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }

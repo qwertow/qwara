@@ -80,13 +80,13 @@ class _ImageDetail extends State<ImageDetail> {
 
     // return res;
   }
-  late List files=[];
+  late List<Map<String, dynamic>> files=[];
   Future<void> _getFiles()  async {
     // try {
     await _getImageDetail(widget.imageInfo['id']);
     setState(() {
       files.clear();
-      files.addAll(imgDetail['files']);
+      files.addAll(imgDetail['files'].cast<Map<String, dynamic>>());
       print("files0: $files");
     });
 
@@ -136,7 +136,7 @@ class _ImageDetail extends State<ImageDetail> {
     );
   }
 
-  Widget _buildVideoProfile() {
+  Widget _buildImgProfile() {
     return Profile(
       type: ProfileType.image,
       scrollPhysics: _scrollPhysics,
@@ -154,7 +154,7 @@ class _ImageDetail extends State<ImageDetail> {
         if (isLiked) {
           await unlikeImage(imgDetail['id']);
         }else {
-          await likeImage(imgDetail['id'], storeController.userInfo ?? {});
+          await likeImage(imgDetail['id'], storeController.userInfo?['user'] ?? {});
         }
         await _getImageDetail(widget.imageInfo['id']);
       },
@@ -172,6 +172,8 @@ class _ImageDetail extends State<ImageDetail> {
       child: Column(
         children: [
           Container(
+            width: double.infinity,
+            alignment: Alignment.center,
             color: Colors.black,
             child: ImageView(fileList: files),
           )
@@ -183,9 +185,9 @@ class _ImageDetail extends State<ImageDetail> {
                   padding: const EdgeInsets.all(8.0),
                   child: _buildTabBarView(),
                 ),
-                landscape: (context) => _buildVideoProfile(),
+                landscape: (context) => _buildImgProfile(),
               ),
-              tablet: (context) => _buildVideoProfile(),
+              tablet: (context) => _buildImgProfile(),
             ),
           ),
         ],
@@ -201,7 +203,7 @@ class _ImageDetail extends State<ImageDetail> {
         TabItem(
           title: const Text("简介"),
           onTap: () {},
-          tab: _buildVideoProfile(),
+          tab: _buildImgProfile(),
         ),
         TabItem(
           title: const Text("评论"),

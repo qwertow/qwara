@@ -11,6 +11,10 @@ class ControllerReloadEvent {
 
 class UpdateAccessTokenEvent {
   UpdateAccessTokenEvent(this.success);
-
   bool success;
+}
+
+class TimeOutEvent {
+  TimeOutEvent(this.message);
+  String message;
 }

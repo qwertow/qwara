@@ -3,10 +3,8 @@ import 'package:video_player/video_player.dart';
 import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
 import 'package:qwara/pages/videoDetail/FullScreen.dart';
 import 'package:qwara/getX/StoreController.dart';
-import 'package:get/get.dart';
 import 'package:qwara/enum/Enum.dart';
 
-final storeController = Get.find<StoreController>();
 
 class ControlMask extends StatefulWidget{
   const ControlMask({

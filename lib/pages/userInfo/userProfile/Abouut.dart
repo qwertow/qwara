@@ -55,6 +55,7 @@ class _AboutState extends State<About> with AutomaticKeepAliveClientMixin {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return ListView(
       children: [
         Container(

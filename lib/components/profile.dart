@@ -13,7 +13,8 @@ import 'package:get/get.dart' hide Response;
 import 'video/VideoList.dart';
 import 'package:sizer/sizer.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-
+import 'package:flutter_linkify/flutter_linkify.dart';
+import 'package:url_launcher/url_launcher.dart';
 enum ProfileType {
   video,
   image,
@@ -33,8 +34,8 @@ class Profile extends StatefulWidget {
   final List files;
   final Future<bool> Function()? onDownload;
   final void Function()? onSetPlaylist;
-  final Function(bool isLiked)? handleLIke;
-  final Function(bool isFollowed)? handleFollow;
+  final Future<void> Function(bool isLiked)? handleLIke;
+  final Future<void> Function(bool isFollowed)? handleFollow;
   final ScrollPhysics? scrollPhysics;
   final ScrollController? scrollController;
   final Function(String url)? setClipboard;
@@ -49,6 +50,8 @@ class _ProfileState extends State<Profile> with AutomaticKeepAliveClientMixin{
   bool isLiked = false;
   bool isFollowed = false;
   bool downloadSuccess = false;
+  bool _likeLoading = false;
+  bool _followLoading = false;
 
   late Map<String, dynamic> _similars={};
   late Map<String, dynamic> _authors={};
@@ -236,7 +239,17 @@ class _ProfileState extends State<Profile> with AutomaticKeepAliveClientMixin{
                               child: Column(
                                 children: [
                                   if(_Info['body']!= null)
-                                    Text(_Info['body']),
+                                    Linkify(
+                                        text: _Info['body'],
+                                        onOpen: (link) async {
+                                          final Uri _url = Uri.parse(link.url);
+                                          if (!await launchUrl(_url) ){
+                                            throw Exception('Could not launch $_url');
+                                          }
+                                        },
+                                        options: const LinkifyOptions(humanize: false),
+                                    )
+                                    // Text(_Info['body']),
                                 ],
                               ),
                             ),
@@ -278,15 +291,21 @@ class _ProfileState extends State<Profile> with AutomaticKeepAliveClientMixin{
                             },
                             icon: const Icon(Icons.playlist_add_outlined),
                           ),
-                          TextButton(
+                          Skeletonizer(enabled: _likeLoading, child: TextButton(
                             style: ButtonStyle(
                               backgroundColor: WidgetStateProperty.all(isLiked ? Colors.blue : Colors.grey[300]),
                             ),
-                            onPressed: () {
-                              widget.handleLIke?.call(isLiked);
+                            onPressed: () async {
+                              setState(() {
+                                _likeLoading = true;
+                              });
+                              await widget.handleLIke?.call(isLiked);
+                              setState(() {
+                                _likeLoading = false;
+                              });
                             },
                             child: Text(isLiked ? 'unlike': 'like'),
-                          ),
+                          )),
                           const SizedBox(
                             width: 20,
                           )
@@ -307,7 +326,7 @@ class _ProfileState extends State<Profile> with AutomaticKeepAliveClientMixin{
                     child: CircleAvatar(
                       radius: 26,
                       child: ClipOval(
-                        child: Image.network(
+                        child: Skeleton.replace(child: Image.network(
                           'https://i.iwara.tv/image/avatar/${_Info['user']?['avatar']?['id'] }/${_Info['user']?['avatar']?['name']}',
                           headers: const {
                             'Referer': "https://www.iwara.tv/",
@@ -320,20 +339,26 @@ class _ProfileState extends State<Profile> with AutomaticKeepAliveClientMixin{
                               fit: BoxFit.cover,
                             );
                           },
-                        ),
+                        )),
                       ),
                     ),
                   ),
                   title: Text(_Info['user']?['name'] ?? '作者名称'),
                   subtitle: Text("@${_Info['user']?['username'] ?? '作者用户名'}"),
-                  trailing: TextButton(
+                  trailing: Skeletonizer(enabled: _followLoading, child: TextButton(
                       style: ButtonStyle(
                         backgroundColor: WidgetStateProperty.all(isFollowed ? Colors.blue : Colors.grey[300]),
                       ),
-                      onPressed: () {
-                        widget.handleFollow?.call(isFollowed);
+                      onPressed: () async {
+                        setState(() {
+                          _followLoading = true;
+                        });
+                        await widget.handleFollow?.call(isFollowed);
+                        setState(() {
+                          _followLoading = false;
+                        });
                       },
-                      child: Text(isFollowed ? '已关注': '关注')),
+                      child: Text(isFollowed ? '已关注': '关注'))),
                 )
             ),
             //tags
@@ -351,18 +376,18 @@ class _ProfileState extends State<Profile> with AutomaticKeepAliveClientMixin{
             ),
             //作者作品列表
             const Text("作者作品列表"),
-            _buildList(_authors['results']),
+            _buildList(_authors['results']?.cast<Map<String, dynamic>>()),
 
 
             //类似作品
             const Text("类似作品"),
-            _buildList(_similars['results']),
+            _buildList(_similars['results']?.cast<Map<String, dynamic>>()),
 
           ],
         )
     );
   }
-  Widget _buildList(List? data) {
+  Widget _buildList(List<Map<String, dynamic>>? data) {
     return widget.type == ProfileType.video
         ?VideoList(
       items: data ?? [],

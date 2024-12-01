@@ -6,6 +6,9 @@ import 'package:qwara/pages/userInfo/userProfile/Abouut.dart';
 import 'package:qwara/pages/userInfo/userProfile/ProFileVideos.dart';
 import 'package:qwara/pages/userInfo/userProfile/ProfileImages.dart';
 import 'package:sizer/sizer.dart';
+import 'package:qwara/getX/StoreController.dart';
+import 'package:skeletonizer/skeletonizer.dart';
+import '../../../api/subscribe/follow.dart';
 
 class UserProfile extends StatefulWidget {
   const UserProfile({super.key, required this.user});
@@ -19,11 +22,13 @@ class _UserProfileState extends State<UserProfile> {
   late Map<String, dynamic> userData={};
   Map<String, dynamic> currUser=storeController.userInfo ?? {};
   bool isExpanded = false; // 控制展开状态
-  void getUserData() async {
+  bool _followLoading = false; // 关注按钮loading状态
+  Future<void> getUserData() async {
     Map<String, dynamic> res = await getUserProfile(widget.user['username']);
     setState(() {
       userData = res;
     });
+    return ;
   }
 
   @override
@@ -102,15 +107,28 @@ class _UserProfileState extends State<UserProfile> {
           ),
           const SizedBox(height: 8),
           // 按钮
-          if(userData['user']?['id']!= currUser['id'])
+          if(userData['user']?['id']!= currUser['user']['id'])
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              OutlinedButton(
-                onPressed: () {},
+              Skeletonizer(enabled: _followLoading,child: OutlinedButton(
+                onPressed: () async {
+                  setState(() {
+                    _followLoading = true;
+                  });
+                  if (userData['user']?['following']??false) {
+                    await unfollowUser(userData['user']["id"]);
+                  }else {
+                    await followUser(userData['user']["id"]);
+                  }
+                  await getUserData();
+                  setState(() {
+                    _followLoading = false;
+                  });
+                },
                 child: Text((userData['user']?['following']??false)?'取消关注':'关注'),
                 // style: OutlinedButton.styleFrom(primary: Colors.white),
-              ),
+              )),
               const SizedBox(width: 8),
               OutlinedButton(
                 onPressed: () {},
