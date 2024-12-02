@@ -18,15 +18,25 @@ class VideoList extends StatelessWidget {
   final int crossAxisCountMobile;
   final int crossAxisCountTablet;
   String getThumbnailUrl(int index) {
-    if(items.isEmpty || items[index]["file"]==null){
-      return "https:///fake";
-    }
-    var customThumbnail = items[index]["customThumbnail"];
-    // print(customThumbnail.toString());
-    var id = customThumbnail != null ? customThumbnail["id"] : items[index]["file"]["id"];
-    var name = customThumbnail != null ? customThumbnail["name"] : "thumbnail-00.jpg";
+    var customThumbnail ;
+    var id ;
+    var name ;
+    String thumbnailUrl = "";
+    try {
+      if(items.isEmpty || items[index]["file"]==null){
+        thumbnailUrl = "https:///fake";
+      }
+      customThumbnail = items[index]["customThumbnail"];
+      // print(customThumbnail.toString());
+      id = customThumbnail != null ? customThumbnail["id"] : items[index]["file"]["id"];
+      name = customThumbnail != null ? customThumbnail["name"] : "thumbnail-00.jpg";
+      thumbnailUrl = "https://i.iwara.tv/image/thumbnail/$id/$name";
 
-    return "https://i.iwara.tv/image/thumbnail/$id/$name";
+    }catch(e){
+      print(e);
+    }
+    return thumbnailUrl;
+
   }
 
   @override
@@ -34,7 +44,7 @@ class VideoList extends StatelessWidget {
     final List _items = loading ? List.generate(10, (index) => {
       "title": "Loading...","user": {"name": "Loading..."},
       "numLikes": 0, "file": {"id": "123"}}) : items;
-    print("VideoList build $loading");
+    // print("VideoList build $loading");
     const cardCircular=12.0;
     return Skeletonizer(
       enabled: loading,
@@ -68,7 +78,7 @@ class VideoList extends StatelessWidget {
                   // height: 100 + index * 10.toDouble(),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(cardCircular),
-                    // color: Colors.blue,
+                    color: Colors.grey[200],
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -108,7 +118,7 @@ class VideoList extends StatelessWidget {
                           _items[index] ['title']!,
                           style: const TextStyle(
                             fontSize: 15,
-                            fontWeight: FontWeight.bold,
+                            // fontWeight: FontWeight.bold,
                             color: Colors.black,
                           ),
                         ),
@@ -126,7 +136,7 @@ class VideoList extends StatelessWidget {
                             ),
                             Row(
                               children: [
-                                const Icon(Icons.favorite,size: 14,),
+                                const Icon(Icons.favorite_outline,size: 14,),
                                 Text("${_items[index]['numLikes']}"),
                               ],
                             ),

@@ -13,7 +13,6 @@ import 'package:qwara/constant.dart';
 import 'package:qwara/components/profile.dart';
 import 'package:qwara/pages/generalPage/CommentPage.dart';
 import 'package:responsive_builder/responsive_builder.dart';
-import 'package:qwara/components/SlidingPanel3Controller.dart';
 import 'package:sizer/sizer.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:get/get.dart';
@@ -239,8 +238,6 @@ class _VideoDetail extends State<VideoDetail>  {
     });
   }
 
-  SliverPanel3Controller slidingPanel3Controller = SliverPanel3Controller();
-
   late Map<String, dynamic> videoDetail={};
   final List videoUrls=[];
   Future<void> _getVideoDetail(String id) async {
@@ -257,7 +254,6 @@ class _VideoDetail extends State<VideoDetail>  {
   }
 
   _getVideoUrls()  async {
-    // try {
       await _getVideoDetail(widget.videoInfo['id']);
       String fileUrl = videoDetail['fileUrl'];
       print("fileUrl: $fileUrl");
@@ -280,10 +276,6 @@ class _VideoDetail extends State<VideoDetail>  {
 
       print(res);
       return res;
-    // }catch (e) {
-    //   print(e);
-    //   _getVideoUrls();
-    // }
   }
 
 
@@ -323,11 +315,11 @@ class _VideoDetail extends State<VideoDetail>  {
                 _buildCommentSection(isPortrait),
               ],
             ),
-            _buildSliverPanel(),
           ],
         ),
     );
   }
+
 
   Widget _buildVideoProfile() {
     return Profile(
@@ -352,14 +344,20 @@ class _VideoDetail extends State<VideoDetail>  {
         await _getVideoDetail(widget.videoInfo['id']);
       },
       onSetPlaylist: () {
-        slidingPanel3Controller.setPanel3State(Panel3State.CENTER);
-        _getPlaylist();
+        _showModalBottomSheet(context);
       },
       info: videoDetail,
       files: videoUrls,
     );
   }
-
+  void _showModalBottomSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return _PlayLists(videoId: widget.videoInfo['id']);
+      },
+    );
+  }
   Widget _buildVideoSection(bool isPortrait) {
     return Expanded(
       flex: 3,
@@ -440,15 +438,27 @@ class _VideoDetail extends State<VideoDetail>  {
     );
   }
 
+}
 
-  final List<Map<String, dynamic>> playLists = List.generate(10, (i) {
+class _PlayLists extends StatefulWidget {
+  const _PlayLists({required this.videoId});
+  final String videoId;
+
+  @override
+  State<_PlayLists> createState() => __PlayListsState();
+}
+
+class __PlayListsState extends State<_PlayLists> {
+  final List<Map<String, dynamic>> _playLists = List.generate(10, (i) {
     return {
       'title': 'title$i',
     };
   });
+  TextEditingController playListController = TextEditingController();
+  ScrollPhysics? _scrollPhysics = null;
+  ScrollController _scrollController = ScrollController();
   bool playListLoading = false;
   bool upLoading = false;
-
   Future<void> _getPlaylist() async {
     if(!upLoading){
       setState(() {
@@ -456,13 +466,15 @@ class _VideoDetail extends State<VideoDetail>  {
       });
     }
 
-    final List<Map<String, dynamic>> res = await getPlayListByVideoId(widget.videoInfo['id']);
+    final List<Map<String, dynamic>> res = await getPlayListByVideoId(widget.videoId);
     setState(() {
-      playLists.clear();
-      playLists.addAll(res);
+      _playLists.clear();
+      // print('999');
+      _playLists.addAll(res);
+      // print('888');
       playListLoading = false;
     });
-    print(res);
+    print(playListLoading);
   }
 
   Future<void> _addPlayList(String pid, String vId) async {
@@ -490,48 +502,23 @@ class _VideoDetail extends State<VideoDetail>  {
     await createPlayList(title);
     await _getPlaylist();
   }
-
-  TextEditingController playListController = TextEditingController();
-  Widget _buildSliverPanel() {
-    return Align(
-      alignment: AlignmentDirectional.bottomCenter,
-      child: Container(
-        decoration: const BoxDecoration(
-            // color: Colors.white,
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(10.0),
-              topRight: Radius.circular(10.0),
-            )
-        ),
-        margin: const EdgeInsets.symmetric(horizontal: 10.0),
-        // padding: const EdgeInsets.symmetric(horizontal: 10.0),
-        child: SliverPanel3View(
-          backColor: Colors.white,
-          heightClose: 0,
-          heightCenter: 40.h,
-          heightOpen: 60.h,
-          headWidget: headView(),
-          bodyWidget: (ScrollController sc, ScrollPhysics? physics) {
-            return BodyView(sc, physics);
-          },
-          sliverPanel3Controller: slidingPanel3Controller,
-          initPanel3state: Panel3State.CLOSE,
-        ),
-      ));
+  @override
+  void initState() {
+    super.initState();
+    _getPlaylist();
   }
 
-
-  Widget headView() {
+  Widget _HeadView() {
     return Column(
       children: [
-         Divider(
-            // height: 2,
-            thickness: 5,
-            indent: 35.w,
-            endIndent: 35.w,
+        Divider(
+          // height: 2,
+          thickness: 5,
+          indent: 35.w,
+          endIndent: 35.w,
         ),
         Container(
-          color: Colors.white,
+          // color: Colors.white,
           padding: const EdgeInsets.symmetric(horizontal: 10.0),
           child: Row(
             children: [
@@ -580,8 +567,7 @@ class _VideoDetail extends State<VideoDetail>  {
       ],
     );
   }
-
-  Widget BodyView(ScrollController sc ,  ScrollPhysics? physics) {
+  Widget _BodyView() {
     // return Container(height: 999,width: 380, color: Colors.yellowAccent,);
 
     Widget _itemView(int i) {
@@ -592,33 +578,63 @@ class _VideoDetail extends State<VideoDetail>  {
         ),
         child: ListTile(
           title: Text(
-            playLists[i]['title'],
+            _playLists[i]['title'],
           ),
           trailing: Skeletonizer(
-            enabled: upLoading,
+              enabled: upLoading,
               child: Switch(
-            value: playLists[i]['added']?? false,
-            onChanged: (bool newValue) {
-              if (newValue) {
-                _addPlayList(playLists[i]['id'], widget.videoInfo['id']);
-              }else {
-                _removePlayList(playLists[i]['id'], widget.videoInfo['id']);
-              }
-            },
-          )),
+                value: _playLists[i]['added']?? false,
+                onChanged: (bool newValue) {
+                  if (newValue) {
+                    _addPlayList(_playLists[i]['id'], widget.videoId);
+                  }else {
+                    _removePlayList(_playLists[i]['id'], widget.videoId);
+                  }
+                },
+              )),
         ),
       );
     }
 
     return Skeletonizer(
-      enabled: playListLoading,
-        child: ListView.builder(
-      controller: sc,
-      physics: physics,
-      itemCount: playLists.length,
-      itemBuilder: (context, index) {
-        return _itemView(index);
-      },
-    ));
+        enabled: playListLoading,
+        child: Listener(
+          onPointerMove: (PointerMoveEvent event){
+            if(event.delta.dy > 0){
+              if(_scrollController.hasClients && _scrollController.offset==0){
+                setState(() {
+                  _scrollPhysics = const NeverScrollableScrollPhysics();
+                });
+              }
+            }else{
+              setState(() {
+                _scrollPhysics = null;
+              });
+            }
+          },
+          child: ListView.builder(
+            controller: _scrollController,
+            physics: _scrollPhysics,
+            itemCount: _playLists.length,
+            itemBuilder: (context, index) {
+              return _itemView(index);
+            },
+          ),
+        )
+    );
+  }
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10.0),
+      child: Column(
+        children: [
+          _HeadView(),
+          Flexible(
+            child: _BodyView(),
+          )
+        ],
+      ),
+    );
   }
 }

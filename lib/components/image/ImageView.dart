@@ -1,4 +1,4 @@
-
+import 'package:sizer/sizer.dart';
 import 'dart:async';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:flutter/foundation.dart';
@@ -58,8 +58,8 @@ class ImgFile {
         name: json['name'],
         mime: json['mime'],
         size: json['size'],
-        width: json['width'],
-        height: json['height'],
+        width: json['width'] ?? 60.w.toInt(),
+        height: json['height'] ?? 30.h.toInt(),
         duration: json['duration'],
         numThumbnails: json['numThumbnails'],
         animatedPreview: json['animatedPreview'],
@@ -143,8 +143,11 @@ class ImageViewState extends State<ImageView>{
       return ConstrainedBox(constraints: BoxConstraints(
         maxHeight: MediaQuery.of(context).size.height*0.5,
       ),
-          child: Stack(
+          child: AnimatedSize(duration: const Duration(milliseconds: 250),child: Stack(
             children: [
+
+              // AnimatedSize(duration: const Duration(milliseconds: 1000),
+              // child:
               Opacity(
                 opacity: 0.0,
                 child: AspectRatio(
@@ -182,6 +185,7 @@ class ImageViewState extends State<ImageView>{
                       },
                     )),
               ),
+              // ),
 
               SizedBox(
                 height: imgHeight,
@@ -199,31 +203,33 @@ class ImageViewState extends State<ImageView>{
                       child: Stack(
                         alignment: Alignment.center,
                         children: [
-                          AnimatedSize(
-                              duration: const Duration(milliseconds: 300),
-                              // alignment: Alignment.center,
-                              child:AspectRatio(
-                                aspectRatio: _fileList[index].width / _fileList[index].height,
-                                child:  Image.network(
-                                  "$largePrefix${_fileList[index].id}/${_fileList[index].name}",
-                                  fit: BoxFit.fitHeight,
-                                  loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
-                                    if (loadingProgress == null) {
-                                      return child;
-                                    }
-                                    return Center(
-                                      child: CircularProgressIndicator(
-                                        value: loadingProgress.expectedTotalBytes != null
-                                            ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
-                                            : null,
-                                      ),
-                                    );
-                                  },
-                                  errorBuilder: (ctx, err, stackTrace) => Image.asset(
-                                    'assets/images/780.jfif', // 默认显示图片
+                          // AnimatedSize(
+                          //     duration: const Duration(milliseconds: 300),
+                          // alignment: Alignment.center,
+                          // child:
+                          AspectRatio(
+                            aspectRatio: _fileList[index].width / _fileList[index].height,
+                            child:  Image.network(
+                              "$largePrefix${_fileList[index].id}/${_fileList[index].name}",
+                              fit: BoxFit.fitHeight,
+                              loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
+                                if (loadingProgress == null) {
+                                  return child;
+                                }
+                                return Center(
+                                  child: CircularProgressIndicator(
+                                    value: loadingProgress.expectedTotalBytes != null
+                                        ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                                        : null,
                                   ),
-                                ),
-                              )),
+                                );
+                              },
+                              errorBuilder: (ctx, err, stackTrace) => Image.asset(
+                                'assets/images/780.jfif', // 默认显示图片
+                              ),
+                            ),
+                          ),
+                          // ),
                           Positioned(
                             bottom: 10,
                             right: 10,
@@ -248,7 +254,7 @@ class ImageViewState extends State<ImageView>{
                 ),
               ),
             ],
-          ));
+          )),);
     }else{
       return  Wrap(
         children: _fileList.asMap().map((index, img) {

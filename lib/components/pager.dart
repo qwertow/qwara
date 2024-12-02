@@ -59,7 +59,7 @@ class Pager extends StatelessWidget {
                 // color: Colors.amberAccent,
                 alignment:  Alignment.center,
                 height: 40,
-                margin: const EdgeInsets.only(left: 20),
+                // margin: const EdgeInsets.only(left: 20),
                 child: Text("Page $currentPage of $totalPages",
                   textAlign: TextAlign.center,),
               ),
@@ -69,7 +69,7 @@ class Pager extends StatelessWidget {
             IconButton(
                 style: ButtonStyle(
                     backgroundColor: WidgetStatePropertyAll(
-                      currentPage>1?Colors.blue:Colors.grey,
+                      currentPage>1?Colors.blue[400]:Colors.grey[400],
                     )
                 ),
                 onPressed: (){
@@ -83,7 +83,7 @@ class Pager extends StatelessWidget {
                 enableFeedback: currentPage==totalPages,
                 style: ButtonStyle(
                     backgroundColor: WidgetStatePropertyAll(
-                      currentPage<totalPages?Colors.blue:Colors.grey,
+                      currentPage<totalPages?Colors.blue[400]:Colors.grey,
                     )
                 ),
                 onPressed: (){
@@ -94,7 +94,7 @@ class Pager extends StatelessWidget {
                 },
                 icon: const Icon(Icons.keyboard_arrow_right)
             ),
-            const SizedBox(width: 20)
+            // const SizedBox(width: 20)
           ],
         )
       ],

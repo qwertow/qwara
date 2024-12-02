@@ -7,14 +7,13 @@ import 'package:qwara/pages/userInfo/PlayList.dart';
 import 'package:qwara/pages/userInfo/PlayListDetail.dart';
 import 'package:qwara/pages/userInfo/userProfile/UserProfile.dart';
 import 'package:qwara/pages/videoDetail/videoDetail.dart';
-import 'package:qwara/pages//videosPage//VideosPage.dart';
 import 'package:qwara/pages/videosPage/Favorites.dart';
 
+import '../pages/SearchPage.dart';
 import '../pages/image/ImageDetail.dart';
 
 final Map routes = {
-  "/home":(context)=>const MyHomePage(),
-  "/recommend":(context)=>const VideosPage(),
+  "/home":(context,{arguments})=>MyHomePage(iniIndex: arguments["index"],sortTag: arguments["tagId"],),
   "/videoDetail":(context,{arguments})=>VideoDetail(videoInfo: arguments),
   "/imageDetail":(context,{arguments})=>ImageDetail(imageInfo: arguments),
   "/login":(context)=> const LoginPage(),
@@ -23,6 +22,7 @@ final Map routes = {
   "/toPlaylist":(context)=>const PlayListPage(),
   "/playListDetail":(context,{arguments})=>PlayListDetail(playlist: arguments),
   "/favorites":(context)=>const FavoritesPage(),
+  "/search":(context)=>const SearchPage(),
 };
 
 var onGenerateRoute=(RouteSettings settings){

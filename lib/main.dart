@@ -52,8 +52,9 @@ class MyApp extends StatelessWidget {
 }
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key});
-
+  const MyHomePage({super.key, this.iniIndex, this.sortTag});
+  final int? iniIndex;
+  final String? sortTag;
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
@@ -61,13 +62,15 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   int _currentIndex = 0;
-  final PageController _pageController = PageController();
+  late PageController _pageController = PageController();
   final storeController=Get.put(StoreController());
   late Map<String, dynamic> currUser={};
   late Timer _timer;
   @override
   void initState() {
     super.initState();
+    _currentIndex = widget.iniIndex ?? 0;
+    _pageController=PageController(initialPage: _currentIndex);
     currUser=storeController.userInfo ?? {};
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _checkLoginStatus();
@@ -80,7 +83,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   @override
   didUpdateWidget(MyHomePage oldWidget) {
     super.didUpdateWidget(oldWidget);
-    currUser=storeController.userInfo ?? {};
+    currUser=storeController.userInfo ?? {};;
   }
 
   Future<void> refreshAccessToken(bool ini) async {
@@ -117,8 +120,6 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
       drawer: const Drawer(
         child: DrawerView(),
       ),
-      endDrawer: Drawer(
-      ),
       appBar: AppBar(
         leading: Builder(builder: (BuildContext context) {
           return IconButton(
@@ -146,7 +147,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
           IconButton(
             icon: const Icon(Icons.search),
             onPressed: () {
-              //TODO: search page
+              Get.toNamed("/search");
             },
           ),
         ],
@@ -234,10 +235,10 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                   _currentIndex = index;
                 });
               },
-              children: const [
-                Home(), // 页面1
-                VideosPage(),
-                ImagePage()// 页面2
+              children: [
+                const Home(), // 页面1
+                VideosPage(iniSortTag: widget.sortTag),
+                ImagePage(iniSortTag: widget.sortTag)// 页面2
               ],
             ),
           ),

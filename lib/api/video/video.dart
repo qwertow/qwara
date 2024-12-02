@@ -20,19 +20,26 @@ Future<Map<String, dynamic>> getVideoList({
   String rating = 'ecchi',
   String? userId,
   int? limit,
-  String? exclude
+  String? exclude,
+  Set<String>? tags,
+  String? date,
 })async {
   print('getVideoList $sort $page $rating $userId $limit $exclude');
+
+  Map<String, dynamic> params = {
+    'exclude': exclude,
+   'sort': sort,
+    'page': page,
+    'rating': rating,
+    'user': userId,
+    'limit': limit,
+    "tags": tags?.join('%2C'),
+    "date": date
+  };
+  params.removeWhere((key, value) => value == null || value == '');
   final response=await dio.get(
       '/videos',
-      queryParameters: {
-        'exclude': exclude,
-       'sort': sort,
-        'page': page,
-        'rating': rating,
-        'user': userId,
-        'limit': limit
-      }
+      queryParameters: params
   );
   // print(response.data.toString());
   return response.data;

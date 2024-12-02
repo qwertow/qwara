@@ -19,16 +19,24 @@ class ImgList extends StatelessWidget {
   final int crossAxisCountMobile;
   final int crossAxisCountTablet;
   String getThumbnailUrl(int index) {
-    if(items.isEmpty){
-      return "https://123";
-    }
-    var customThumbnail = items[index]["thumbnail"];
-    // print("ddddddddd");
-    // print(customThumbnail.toString());
-    var id = customThumbnail["id"] ;
-    var name =  customThumbnail["name"];
 
-    return "https://i.iwara.tv/image/thumbnail/$id/$name";
+    var customThumbnail;
+    var id ;
+    var name;
+    String thumbnailUrl = "";
+
+    try{
+      if(items.isEmpty){
+        thumbnailUrl = "https://123";
+      }
+      customThumbnail = items[index]["thumbnail"];
+      id = customThumbnail["id"] ;
+      name =  customThumbnail["name"];
+      thumbnailUrl = "https://i.iwara.tv/image/thumbnail/$id/$name";
+    }catch(e){
+      print(e);
+    }
+    return thumbnailUrl;
   }
 
   @override
@@ -65,6 +73,7 @@ class ImgList extends StatelessWidget {
                 child: Container(
                     width: double.infinity,
                     decoration: BoxDecoration(
+                      color: Colors.grey[200],
                       borderRadius: BorderRadius.circular(cardCircular),
                     ),
                     child: Stack(
@@ -108,7 +117,7 @@ class ImgList extends StatelessWidget {
                                 _items[index] ['title']!,
                                 style: const TextStyle(
                                   fontSize: 15,
-                                  fontWeight: FontWeight.bold,
+                                  // fontWeight: FontWeight.bold,
                                   color: Colors.black,
                                 ),
                               ),
@@ -126,7 +135,7 @@ class ImgList extends StatelessWidget {
                                   ),
                                   Row(
                                     children: [
-                                      const Icon(Icons.favorite,size: 14,),
+                                      const Icon(Icons.favorite_outline,size: 14,),
                                       Text("${_items[index]['numLikes']}"),
                                     ],
                                   ),

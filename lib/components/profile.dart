@@ -366,7 +366,10 @@ class _ProfileState extends State<Profile> with AutomaticKeepAliveClientMixin{
               runSpacing: -10,
               spacing: 5,
               children: [..._Info['tags']?.map((tag) => TextButton(onPressed: () {
-
+                  Get.toNamed('/home', arguments: {
+                    "index":widget.type == ProfileType.video? 1:2,
+                    "tagId": tag['id'],
+                  });
               }, style: ButtonStyle(
                 minimumSize: const WidgetStatePropertyAll(Size(50, 0)),
                 maximumSize: const WidgetStatePropertyAll(Size(1000, 30)),

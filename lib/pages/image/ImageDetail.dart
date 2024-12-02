@@ -9,7 +9,6 @@ import 'package:flutter/material.dart';
 import 'package:floating_tabbar/lib.dart';
 import 'package:qwara/components/profile.dart';
 import 'package:responsive_builder/responsive_builder.dart';
-import 'package:qwara/components/SlidingPanel3Controller.dart';
 import 'package:get/get.dart';
 
 import '../generalPage/CommentPage.dart';

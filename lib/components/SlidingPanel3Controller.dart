@@ -92,6 +92,7 @@ class _SliverPanel3ViewState extends State<SliverPanel3View> with AutomaticKeepA
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return ValueListenableBuilder(
       valueListenable: _panel3state,
       builder: (context, state, child) {

@@ -3,14 +3,15 @@ import 'package:qwara/api/video/video.dart';
 import 'package:qwara/components/Mydropdown.dart';
 import 'package:qwara/components/video/VideoList.dart';
 import 'package:qwara/components/pager.dart';
-
 import 'package:qwara/enum/Enum.dart';
-
 import 'package:qwara/EventBus/EventBus.dart';
 import 'package:qwara/components/exception/TimeoutPage.dart';
+import 'package:qwara/pages/generalPage/TagSort.dart';
+import 'package:sizer/sizer.dart';
 
 class VideosPage extends StatefulWidget {
-  const VideosPage({super.key});
+  const VideosPage({super.key, this.iniSortTag});
+  final String? iniSortTag;
 
   @override
   State<VideosPage> createState() => _VideosPageState();
@@ -22,6 +23,10 @@ class _VideosPageState extends State<VideosPage> with AutomaticKeepAliveClientMi
   late int currentPage=1;
   late SortType _sortType=SortType.date;
   late bool videoListLoadings=false;
+  late  FilterS _filterS = FilterS(
+    selectedTags: {},
+  );
+
   bool timeout=false;
 
   // 假设有一些示例数据
@@ -34,6 +39,8 @@ class _VideosPageState extends State<VideosPage> with AutomaticKeepAliveClientMi
      Map res=await getVideoList(
       sort: _sortType.value,
       page: currentPage-1,
+       tags: _filterS.selectedTags,
+       date:_filterS.date,
     );
      setState(() {
        totalPages=(res["count"]/res["limit"]).ceil();
@@ -54,6 +61,10 @@ class _VideosPageState extends State<VideosPage> with AutomaticKeepAliveClientMi
   @override
   void initState() {
     super.initState();
+    if(widget.iniSortTag!=null){
+      _filterS.selectedTags?.add(widget.iniSortTag!);
+    }
+
     eventBus.on<TimeOutEvent>().listen((event) {
       setState(() {
         timeout=true;
@@ -81,10 +92,6 @@ class _VideosPageState extends State<VideosPage> with AutomaticKeepAliveClientMi
   // 保持页面状态
   bool get wantKeepAlive => true;
 
-  final List<String> categories = ['电影', '综艺', '动漫', '少儿'];
-  // final List<String> genres = ['古装', '都市', '言情', '武侠', '战争', '青春'];
-  // final List<String> regions = ['内地', '美国', '韩国', '香港', '台湾', '日本'];
-  final List<String> years = ['2024', '2023', '2022', '2021', '2020', '2019'];
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -93,15 +100,15 @@ class _VideosPageState extends State<VideosPage> with AutomaticKeepAliveClientMi
       body: Column(
         children: [
           Flexible(
-            child:!timeout? VideoList(items: items,loading:  videoListLoadings,)
-                :TimeoutPage(
-              onRetry: (){
-                setState(() {
-                  timeout=false;
-                });
-                getData();
-              },
-            )
+              child:!timeout? VideoList(items: items,loading:  videoListLoadings,)
+                  :TimeoutPage(
+                onRetry: (){
+                  setState(() {
+                    timeout=false;
+                  });
+                  getData();
+                },
+              )
           ),
           Pager(currentPage: currentPage, pageChanged: (page){
             setState(() {
@@ -110,44 +117,95 @@ class _VideosPageState extends State<VideosPage> with AutomaticKeepAliveClientMi
             });
             getData();
           }, totalPages: totalPages,
-          leading: MyDropdownButton<String>(
-            icon: const Icon(Icons.sort),
-            value: _sortType.value, // 使用当前排序类型
-            onChanged: (String? newValue) {
-              if (newValue != null) {
-                sortChanged(SortType.values.firstWhere((element) => element.value == newValue));
-              }
-            },
-            items: sortTypes.map((sortType) {
-              return MyDropdownMenuItem<String>(
-                value: sortType.value,
-                child: Row(
-                  children: [
-                    Icon(_getIconForSortType(sortType), color: Colors.black),
-                    const SizedBox(width: 8),
-                    Text(sortType.label, style: const TextStyle(color: Colors.black)),
-                  ],
+            leading: Row(
+              children: [
+                MyDropdownButton<String>(
+                  icon: const Icon(Icons.sort),
+                  value: _sortType.value, // 使用当前排序类型
+                  onChanged: (String? newValue) {
+                    if (newValue != null) {
+                      sortChanged(SortType.values.firstWhere((element) => element.value == newValue));
+                    }
+                  },
+                  items: sortTypes.map((sortType) {
+                    return MyDropdownMenuItem<String>(
+                      value: sortType.value,
+                      child: Row(
+                        children: [
+                          Icon(_getIconForSortType(sortType), color: Colors.black),
+                          const SizedBox(width: 8),
+                          Text(sortType.label, style: const TextStyle(color: Colors.black)),
+                        ],
+                      ),
+                    );
+                  }).toList(),
+                  dropdownColor: Colors.white, // 设置下拉菜单的背景颜色
+                  // iconEnabledColor: Colors.blue, // 下拉箭头的颜色
+                  underline: Container(), // 隐藏下划线
+                  style: const TextStyle(color: Colors.black), // 字体颜色
                 ),
-              );
-            }).toList(),
-            dropdownColor: Colors.white, // 设置下拉菜单的背景颜色
-            // iconEnabledColor: Colors.blue, // 下拉箭头的颜色
-            underline: Container(), // 隐藏下划线
-            style: const TextStyle(color: Colors.black), // 字体颜色
-          ),),
+                Stack(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.tag),
+                      onPressed: () {
+                        // 点击事件
+                        _showModalBottomSheet(context);
+                      },
+                    ),
+                    Positioned(
+                      right: 0,
+                      top: 0,
+                      child: Visibility(
+                        visible: _filterS.selectedTags?.isNotEmpty ?? false,
+                          child: Container(
+                        padding: const EdgeInsets.all(2.0),
+                        decoration: BoxDecoration(
+                          color: Colors.blueAccent,
+                          borderRadius: BorderRadius.circular(12.0),
+                        ),
+                        constraints: const BoxConstraints(
+                          minWidth: 16,
+                          minHeight: 16,
+                        ),
+                        child: Center(
+                          child: Text(
+                            '${_filterS.selectedTags?.length}',  // 显示的数字
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+                      )),
+                    ),
+                  ],
+                )
+              ],
+            ),
+          ),
 
         ],
-      ),
-
-        floatingActionButton: FloatingActionButton(
-          backgroundColor: Colors.transparent,
-            onPressed: () {
-              Scaffold.of(context).openEndDrawer();
-            }, child: const Icon(Icons.tag)
-        ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endTop,
-      // floatingActionButtonAnimator: FloatingActionButtonAnimator.scaling,
+      )
+    );
+  }
+  void _showModalBottomSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true, // 允许底部弹窗根据内容调整高度
+      builder: (BuildContext context) {
+        return SizedBox(
+          height: 70.h,
+          child: TagSort(onSelected: (filters){
+            setState(() {
+              _filterS=filters;
+            });
+            getData();
+          }, iniFilterS: _filterS,),
+        );
+      },
     );
   }
 }
+
 

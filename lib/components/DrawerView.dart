@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:qwara/api/user/user.dart';
 import 'package:qwara/components/ListItem.dart';
 import 'package:qwara/components/MyCard.dart';
 import 'package:get/get.dart' hide Response;
-import 'package:qwara/EventBus/EventBus.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 
 
 class DrawerView extends StatefulWidget {

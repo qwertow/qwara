@@ -21,3 +21,14 @@ enum SortType {
 
   const SortType(this.value, this.label);
 }
+
+enum SearchType {
+  video("video", "视频"),
+  image("image", "图片"),
+  user("user","用户"),
+  nothing("nothing","");
+
+  final String value;
+  final String label;
+  const SearchType(this.value, this.label);
+}
