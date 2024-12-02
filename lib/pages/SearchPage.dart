@@ -113,7 +113,7 @@ class _SearchPageState extends State<SearchPage> {
       case SearchType.image:
         return ImgList(items: i, loading: l);
       case SearchType.user:
-        return UserList(items: i,  loading: l);
+        return UserList(items: i.map((e) => {'user':e}).toList(),  loading: l);
       default:
         return const Text('Search for something');
     }

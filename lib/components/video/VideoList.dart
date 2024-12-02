@@ -89,7 +89,7 @@ class VideoList extends StatelessWidget {
                           topRight: Radius.circular(cardCircular), // 右上角圆角
                         ),
                         child: Skeleton.replace(
-                          height: 100,
+                          // height: 100,
                             child: Image.network(
                             getThumbnailUrl(index),
                             fit: BoxFit.fitWidth, // 使宽度填满，并保持高度按比例缩放

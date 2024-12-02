@@ -87,7 +87,7 @@ class ImgList extends StatelessWidget {
                                 topRight: Radius.circular(cardCircular), // 右上角圆角
                               ),
                               child:  Skeleton.replace(
-                                  height: 100,
+                                  // height: 100,
                                   child:Image.network(
                                   getThumbnailUrl(index),
                                   headers: const {
