@@ -257,6 +257,7 @@ class ImageViewState extends State<ImageView>{
           )),);
     }else{
       return  Wrap(
+        direction: Axis.horizontal,
         children: _fileList.asMap().map((index, img) {
           return MapEntry(
               index,

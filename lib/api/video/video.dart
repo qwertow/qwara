@@ -60,7 +60,7 @@ Future<List> getVideoUrls(String fileUrl,String xVersion)async {
   return response.data;
 }
 //获取订阅视频
-Future<Map> getSubscribedVideos({ required int page, String rating = 'ecchi'})async {
+Future<Map<String, dynamic>> getSubscribedVideos({ required int page, String rating = 'ecchi'})async {
   print('getSubscribedVideos');
   // dio.options.headers['Authorization'] = 'Bearer ${storeController.accessToken}';
 
@@ -87,13 +87,6 @@ Future<Map> getFavoritesVideos(int page)async {
   return response.data;
 }
 
-//获取视频评论
-Future<Map<String, dynamic>> getVideoComments(String videoId, {required int page})async {
-  print('getVideoCommentsapi');
-  final response=await dio.get('/video/$videoId/comments', queryParameters: {'page': page-1});
-  print(response.data.toString());
-  return response.data;
-}
 
 //获取类似视频
 Future<Map<String, dynamic>> getSimilarVideos(String videoId)async {

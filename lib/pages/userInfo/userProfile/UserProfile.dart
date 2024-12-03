@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:qwara/api/comment/comment.dart';
 import 'package:qwara/api/user/user.dart';
 import 'package:floating_tabbar/lib.dart';
 import 'package:qwara/pages/generalPage/CommentPage.dart';
@@ -155,6 +156,8 @@ class _UserProfileState extends State<UserProfile> {
                 TabItem(title: const Text('评论'), onTap: () {},
                     tab: CommentPage(getComments: (page)async{
                       return getUserProfileComment(widget.user['id'], page);
+                    },addComment: (String comment, {String? rpId}) async {
+                      return createCommentProfile(widget.user['id'], comment,rpUid: rpId);
                     })),
               ]))
         ],

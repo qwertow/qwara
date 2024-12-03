@@ -35,7 +35,7 @@ class _HomeState extends State<Home> with AutomaticKeepAliveClientMixin {
     if(storeController.token==null){
       return;
     }
-    Map res;
+    Map<String, dynamic> res;
     if(_isVideo){
       setState(() {
         videoListLoadings=true;
@@ -59,7 +59,7 @@ class _HomeState extends State<Home> with AutomaticKeepAliveClientMixin {
       setState(() {
         totalPages_img=(res["count"]/res["limit"]).ceil();
         imgItems.clear();
-        imgItems.addAll(res["results"]);
+        imgItems.addAll(res["results"].cast<Map<String, dynamic>>());
         print("sssssssss$imgItems");
         imgListLoadings=false;
       });

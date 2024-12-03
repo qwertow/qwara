@@ -1,5 +1,6 @@
 
 import 'package:flutter/services.dart';
+import 'package:qwara/api/comment/comment.dart';
 import 'package:qwara/api/img/img.dart';
 import 'package:qwara/api/subscribe/follow.dart';
 import 'package:qwara/api/subscribe/like.dart';
@@ -211,7 +212,9 @@ class _ImageDetail extends State<ImageDetail> {
             scrollPhysics: _scrollPhysics, scrollController: _commentScrollController,
             getComments: (int page ) async {
               return getImgComments(widget.imageInfo['id'], page: page);
-            },),
+            }, addComment: (String comment, {String? rpId}) async {
+              return createCommentImage(widget.imageInfo['id'], comment,rpUid: rpId);
+          },),
         ),
       ],
     );
@@ -226,12 +229,16 @@ class _ImageDetail extends State<ImageDetail> {
           landscape: (context) => CommentPage(
             getComments: (int page ) async {
               return getImgComments(widget.imageInfo['id'], page: page);
-            },),
+            },addComment: (String comment, {String? rpId}) async {
+            return createCommentImage(widget.imageInfo['id'], comment,rpUid: rpId);
+          }),
         ),
         tablet: (context) => CommentPage(
           getComments: (int page ) async {
             return getImgComments(widget.imageInfo['id'], page: page);
-          },),
+          },addComment: (String comment, {String? rpId}) async {
+          return createCommentImage(widget.imageInfo['id'], comment,rpUid: rpId);
+        }),
       ),
     );
   }

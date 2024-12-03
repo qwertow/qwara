@@ -1,20 +1,24 @@
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
+import 'package:qwara/api/comment/comment.dart';
+import 'package:qwara/components/MyCard.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:get/get.dart' hide Response;
 
 class CommentList extends StatelessWidget {
-   const CommentList({
+    CommentList({
      super.key,
      this.scrollPhysics,
      this.scrollController,
      required this.commentItems,
-     required this.loading});
+     required this.loading, this.rpF, this.delF});
   final ScrollPhysics? scrollPhysics;
   final ScrollController? scrollController;
   final List commentItems;
   final bool loading;
-
+  final void Function(String id,String name)? rpF;
+  final void Function(Future<bool>)? delF;
+  final Map currUser=storeController.userInfo?['user'] ?? {};
   // @override
   // bool get wantKeepAlive => true;
    String formatDate(String dateString) {
@@ -28,7 +32,7 @@ class CommentList extends StatelessWidget {
       'user': {"name": BoneMock.name,"username": BoneMock.fullName,"avatar": null,
         "body": '123',"updatedAt": BoneMock.time}}
     ) : commentItems;
-    // print(_items);
+
     return Skeletonizer(
       enabled: loading,
       child: ListView.builder(
@@ -37,12 +41,22 @@ class CommentList extends StatelessWidget {
         itemCount: _items.length,
         itemBuilder: (context, index) {
           final comment = _items[index];
+          print(currUser['id']);
+          print(comment['user']['id']);
           return Card(
             margin: const EdgeInsets.symmetric(vertical: 1, horizontal: 10),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 ListTile(
+                  trailing:currUser['id'] == comment['user']['id'] ? TextButton(onPressed: () async {
+                    // Map temp = {...(comment as Map)};
+                    // _items.removeAt(index);
+                    // if(!await deleteComment(comment['id'])){
+                    //   _items.insert(index, temp);
+                    // };
+                    delF?.call(deleteComment(comment['id']));
+                  }, child: const Text('删除', style: TextStyle(color: Colors.red))): null,
                   leading: InkWell(
                     onTap: () {
                       Get.toNamed('/userProfile', arguments: comment['user']);
@@ -81,7 +95,7 @@ class CommentList extends StatelessWidget {
                     style: const TextStyle(color: Colors.black54, fontSize: 12),
                   ),
                 ),
-                Padding(padding: const EdgeInsets.symmetric(horizontal: 16),
+                Padding(padding: const EdgeInsets.only(left: 16,right: 22),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -93,9 +107,12 @@ class CommentList extends StatelessWidget {
                         children: [
                           Text(formatDate(comment['updatedAt'] ?? '1970-01-01 00:00:00'), style: const TextStyle(fontSize: 10)),
                           TextButton(
-                            onPressed: () {},
+                            onPressed: (){
+                              rpF?.call(comment['id'],comment['user']['name']);
+                            },
                             child: const Text('回复', style: TextStyle(color: Colors.red)),
                           ),
+                          // const SizedBox(width: 10),
                         ],
                       )
                     ],

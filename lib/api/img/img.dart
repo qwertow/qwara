@@ -40,14 +40,6 @@ Future<Map<String, dynamic>> getImgDetail(String imgId)async {
   return response.data;
 }
 
-//获取图片评论
-Future<Map<String, dynamic>> getImgComments(String imgId, {required int page})async {
-  print('getImgComments');
-  final response=await dio.get('/image/$imgId/comments', queryParameters: {'page': page-1});
-  print(response.data.toString());
-  return response.data;
-}
-
 //获取类似图片
 Future<Map<String, dynamic>> getSimilarImgs(String imgId)async {
   print('getSimilarImgs');
@@ -56,8 +48,8 @@ Future<Map<String, dynamic>> getSimilarImgs(String imgId)async {
   return response.data;
 }
 
-//获取订阅视频
-Future<Map> getSubscribedImgs({ required int page, String rating = 'ecchi',int limit = 24 })async {
+//获取订阅的图片列表
+Future<Map<String, dynamic>> getSubscribedImgs({ required int page, String rating = 'ecchi',int limit = 24 })async {
   print('getSubscribedImgs $page $rating $limit');
   // dio.options.headers['Authorization'] = 'Bearer ${storeController.accessToken}';
 

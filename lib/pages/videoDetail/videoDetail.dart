@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/services.dart';
+import 'package:qwara/api/comment/comment.dart';
 import 'package:qwara/api/subscribe/follow.dart';
 import 'package:qwara/api/subscribe/like.dart';
 import 'package:qwara/api/subscribe/playList.dart';
@@ -413,7 +414,9 @@ class _VideoDetail extends State<VideoDetail>  {
               scrollController: _commentScrollController,
               getComments: (int page ) async {
                 return getVideoComments(widget.videoInfo['id'], page: page);
-              },),
+              },addComment: (String comment, {String? rpId}) async {
+              return createCommentVideo(widget.videoInfo['id'], comment,rpUid: rpId);
+            }),
           ),
         ],
       );
@@ -428,12 +431,16 @@ class _VideoDetail extends State<VideoDetail>  {
           landscape: (context) => CommentPage(
             getComments: (int page ) async {
               return getVideoComments(widget.videoInfo['id'], page: page);
-            },),
+            },addComment: (String comment, {String? rpId}) async {
+            return createCommentVideo(widget.videoInfo['id'], comment,rpUid: rpId);
+          }),
         ),
         tablet: (context) => CommentPage(
           getComments: (int page ) async {
             return getVideoComments(widget.videoInfo['id'], page: page);
-          },),
+          },addComment: (String comment, {String? rpId}) async {
+          return createCommentVideo(widget.videoInfo['id'], comment,rpUid: rpId);
+        }),
       ),
     );
   }
@@ -456,7 +463,7 @@ class __PlayListsState extends State<_PlayLists> {
   });
   TextEditingController playListController = TextEditingController();
   ScrollPhysics? _scrollPhysics = null;
-  ScrollController _scrollController = ScrollController();
+  final ScrollController _scrollController = ScrollController();
   bool playListLoading = false;
   bool upLoading = false;
   Future<void> _getPlaylist() async {

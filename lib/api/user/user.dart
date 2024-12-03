@@ -84,10 +84,3 @@ Future<Map<String,dynamic>> getUserProfile(String username) async {
   final response = await dio.get('/profile/$username');
   return response.data;
 }
-
-//用户评论
-Future<Map<String,dynamic>> getUserProfileComment(String userId, int page) async {
-  print('getUserProfileComment userId: $userId, page: $page');
-  final response = await dio.get('/profile/$userId/comments', queryParameters: {'page': page-1});
-  return response.data;
-}
