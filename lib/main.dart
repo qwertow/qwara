@@ -25,28 +25,52 @@ void main() async {
   // 初始化通知帮助类
   NotificationHelper notificationHelper = NotificationHelper();
   await notificationHelper.initialize();
-  runApp(MyApp());
+  runApp(const MyApp());
+}
+class MyApp extends StatefulWidget {
+  const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
 }
 
-class MyApp extends StatelessWidget {
-  MyApp({super.key});
-  final Map routers = routes;
+class _MyAppState extends State<MyApp> {
+  // 初始化主题模式
+  ThemeMode _themeMode = ThemeMode.system;
+
+  @override
+  void initState() {
+    super.initState();
+    // 监听主题切换事件
+    eventBus.on<ThemeChangeEvent>().listen((event) {
+      if(event.themeMode!= null){
+        setState(() {
+          _themeMode = event.themeMode!;
+        });
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Sizer(
-      builder: (context, orientation, deviceType) {
-        return GetMaterialApp(
-          navigatorObservers: [defaultLifecycleObserver],
-          debugShowCheckedModeBanner: false,
-          onGenerateRoute: onGenerateRoute,
-          theme: ThemeData(
-            colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-            useMaterial3: true,
-          ),
-          home: const MyHomePage(),
-        );
-      }
+        builder: (context, orientation, deviceType) {
+          return GetMaterialApp(
+            navigatorObservers: [defaultLifecycleObserver],
+            debugShowCheckedModeBanner: false,
+            onGenerateRoute: onGenerateRoute,
+            theme: ThemeData(
+              colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+              useMaterial3: true,
+            ),
+            darkTheme: ThemeData(
+              brightness: Brightness.dark, // 深色模式
+            ),
+            // 使用动态的主题模式
+            themeMode: _themeMode,
+            home: const MyHomePage(), // 传递主题切换的方法
+          );
+        }
     );
   }
 }
@@ -113,6 +137,24 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     _timer.cancel();
   }
 
+  final List<Map<String, dynamic>> navItems = [
+    {
+      'label': 'home',
+      'icon': Icons.home,
+      'index': 0,
+    },
+    {
+      'label': 'videos',
+      'icon': Icons.dashboard,
+      'index': 1,
+    },
+    {
+      'label': 'images',
+      'icon': Icons.image,
+      'index': 2,
+    },
+  ];
+
   @override
   Widget build(BuildContext context) {
     // print('myhome build   ${storeController.accessToken}');
@@ -129,7 +171,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
             },
           );
         }),
-        backgroundColor: Colors.white,
+        // backgroundColor: Colors.white,
         title: Text(currUser['user']?['name'] ?? '未登录'),
         actions: [
           IconButton(
@@ -152,18 +194,6 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
           ),
         ],
       ),
-      // body: PageView(
-      //   controller: _pageController,
-      //   onPageChanged: (index) {
-      //     setState(() {
-      //       _currentIndex = index;
-      //     });
-      //   },
-      //   children: const [
-      //     Home(),
-      //     VideosPage(),
-      //   ],
-      // ),
       body: Row(
         children: [
           // 竖直的导航栏
@@ -171,58 +201,39 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
           ScreenTypeLayout.builder(
             mobile: (BuildContext context) => const SizedBox.shrink(),
             tablet: (BuildContext context) => SizedBox(
-              width: 80,
+              width: 70,
               child: Column(
-                children: [
-                  TextIconButton(
+                children: navItems.map((item) {
+                  return TextIconButton(
                     margin: const EdgeInsets.all(5),
                     padding: const EdgeInsets.only(top: 5, bottom: 5),
                     radius: 50,
-                    color: _currentIndex == 0? Colors.grey[350] : null,
-                    icon: Icon(Icons.home, size: _currentIndex == 0? 16 : 15),
-                    text: const Text("Home", style: TextStyle(fontSize: 12)),
+                    color: _currentIndex == item['index'] ? Colors.grey[350] : null,
+                    icon: Icon(
+                      item['icon'],
+                      size: _currentIndex == item['index'] ? 16 : 15,
+                      color: _currentIndex == item['index'] ? Colors.blue : null,
+                    ),
+                    text: Text(
+                      item['label'],
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: _currentIndex == item['index'] ? Colors.blue : null,
+                      ),
+                    ),
                     type: TextIconButtonType.imageTop,
                     onTap: () {
-                      _pageController.animateToPage(
-                        0,
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.ease,
-                      );
+                      setState(() {
+                        _currentIndex = item['index'];
+                        _pageController.animateToPage(
+                          item['index'],
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.ease,
+                        );
+                      });
                     },
-                  ),
-                  TextIconButton(
-                    margin: const EdgeInsets.all(5),
-                    padding: const EdgeInsets.only(top: 5, bottom: 5),
-                    radius: 50,
-                    color: _currentIndex == 1? Colors.grey[350] : null,
-                    icon: Icon(Icons.dashboard, size: _currentIndex == 1? 16 : 15),
-                    text: const Text("videos", style: TextStyle(fontSize: 12)),
-                    type: TextIconButtonType.imageTop,
-                    onTap: () {
-                      _pageController.animateToPage(
-                        1,
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.ease,
-                      );
-                    },
-                  ),
-                  TextIconButton(
-                    margin: const EdgeInsets.all(5),
-                    padding: const EdgeInsets.only(top: 5, bottom: 5),
-                    radius: 50,
-                    color: _currentIndex == 2? Colors.grey[350] : null,
-                    icon: Icon(Icons.image, size: _currentIndex == 1? 16 : 15),
-                    text: const Text("Images", style: TextStyle(fontSize: 12)),
-                    type: TextIconButtonType.imageTop,
-                    onTap: () {
-                      _pageController.animateToPage(
-                        2,
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.ease,
-                      );
-                    },
-                  ),
-                ],
+                  );
+                }).toList(),
               ),
             ),
           ),
@@ -256,20 +267,12 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
             );
           },
           currentIndex: _currentIndex,
-          items: const [
-            BottomNavigationBarItem(
-              label: "home",
-              icon: Icon(Icons.home),
-            ),
-            BottomNavigationBarItem(
-              label: "videos",
-              icon: Icon(Icons.dashboard),
-            ),
-            BottomNavigationBarItem(
-              label: "images",
-              icon: Icon(Icons.image),
-            ),
-          ],
+          items: navItems.map((item) {
+            return BottomNavigationBarItem(
+              label: item['label'],
+              icon: Icon(item['icon']),
+            );
+          }).toList(),
         ),
         tablet: (BuildContext context) => const SizedBox.shrink(),
       ),

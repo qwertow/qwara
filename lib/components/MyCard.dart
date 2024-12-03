@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:qwara/api/subscribe/follow.dart';
+import 'package:qwara/constant.dart';
 import 'package:qwara/getX/StoreController.dart';
 import 'package:get/get.dart' hide Response;
 
@@ -53,7 +54,7 @@ class _MyCardState extends State<MyCard> {
   @override
   Widget build(BuildContext context) {
     return Card(
-      color: Colors.white,
+      // color: Colors.white,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
       ),
@@ -73,9 +74,7 @@ class _MyCardState extends State<MyCard> {
                 child: ClipOval(
                   child: Image.network(
                     'https://i.iwara.tv/image/avatar/${_userInfo['user']?['avatar']['id']}/${_userInfo['user']?['avatar']['name']}',
-                    headers: const {
-                      'Referer': "https://www.iwara.tv/",
-                    },
+                    headers: IMG_HEADERS,
                     fit: BoxFit.cover,
                     errorBuilder: (BuildContext context, Object error, StackTrace? stackTrace) {
                       // 显示默认图片，并确保是圆形
@@ -89,7 +88,7 @@ class _MyCardState extends State<MyCard> {
               ),
             ),
             title: Text(_userInfo['user']?['name'] ?? '未登录'),
-            subtitle: Text("@${_userInfo['user']?['name'] ?? '未登录'}"),
+            subtitle: Text("@${_userInfo['user']?['username'] ?? '未登录'}"),
           ),
           const Divider(),
           Container(

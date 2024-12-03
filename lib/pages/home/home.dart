@@ -17,6 +17,7 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> with AutomaticKeepAliveClientMixin {
+  bool _isDark = false;
   late int totalPages_video=0;
   late int currentPage_video=1;
   late int totalPages_img=0;
@@ -81,6 +82,7 @@ class _HomeState extends State<Home> with AutomaticKeepAliveClientMixin {
     });
   }
 
+
   @override
   // 保持页面状态
   bool get wantKeepAlive => true;
@@ -88,6 +90,7 @@ class _HomeState extends State<Home> with AutomaticKeepAliveClientMixin {
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    _isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
         body: Column(
           children: [
@@ -129,9 +132,9 @@ class _HomeState extends State<Home> with AutomaticKeepAliveClientMixin {
                       value: true,
                       child: Row(
                         children: [
-                          Icon(Icons.video_library_outlined, color: Colors.black),
+                          Icon(Icons.video_library_outlined),
                           SizedBox(width: 8),
-                          Text('视频', style: TextStyle(color: Colors.black)),
+                          Text('视频'),
                         ],
                       ),
                     ),
@@ -139,17 +142,15 @@ class _HomeState extends State<Home> with AutomaticKeepAliveClientMixin {
                       value: false,
                       child: Row(
                         children: [
-                          Icon(Icons.image_outlined, color: Colors.black),
+                          Icon(Icons.image_outlined),
                           SizedBox(width: 8),
-                          Text('图片', style: TextStyle(color: Colors.black)),
+                          Text('图片')
                         ],
                       ),
                     )
                   ],
-                  dropdownColor: Colors.white, // 设置下拉菜单的背景颜色
-                  // iconEnabledColor: Colors.blue, // 下拉箭头的颜色
                   underline: Container(), // 隐藏下划线
-                  style: const TextStyle(color: Colors.black), // 字体颜色
+                  style: TextStyle(color: _isDark? Colors.white : Colors.black), // 字体颜色
                 ))
           ],
         )

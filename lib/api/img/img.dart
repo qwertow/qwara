@@ -1,11 +1,12 @@
 
 //获取图片列表
 import '../../utils/dioRequest.dart';
+import 'package:qwara/getX/StoreController.dart';
 
 Future<Map<String, dynamic>> getImgList({
   String? sort,
   int? page,
-  String rating = 'ecchi',
+  String? rating,
   String? userId,
   int? limit,
   String? exclude,
@@ -17,7 +18,7 @@ Future<Map<String, dynamic>> getImgList({
     'exclude': exclude,
     'sort': sort,
     'page': page,
-    'rating': rating,
+    'rating': rating=storeController.settings.rating,
     'user': userId,
     'limit': limit,
     "tags": tags?.join('%2C'),

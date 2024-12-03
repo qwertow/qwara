@@ -4,7 +4,8 @@ import 'package:fluttertoast/fluttertoast.dart';
 import '../../../api/img/img.dart';
 import '../../../api/video/video.dart';
 import '../../../components/video/VideoList.dart';
-
+import 'package:flutter_linkify/flutter_linkify.dart';
+import 'package:url_launcher/url_launcher.dart';
 class About extends StatefulWidget {
   const About({super.key, required this.data, this.userId});
   final Map<String, dynamic> data;
@@ -63,12 +64,18 @@ class _AboutState extends State<About> with AutomaticKeepAliveClientMixin {
           // height: 200,
           child: Column(
             children: [
-              Text(
-                userData['body'] ?? '该用户是个神秘人，不喜欢被人围观。',
+              Linkify(
+                text: userData['body'] ?? '该用户是个神秘人，不喜欢被人围观。',
                 maxLines: isExpanded ? null : 5, // 根据状态调整显示行数
                 overflow: isExpanded ? TextOverflow.visible : TextOverflow.ellipsis, // 根据状态调整溢出行为,
-                style: const TextStyle(color: Colors.black),
-                // textAlign: TextAlign.center,
+                // style: const TextStyle(color: Colors.black),
+                onOpen: (link) async {
+                  final Uri _url = Uri.parse(link.url);
+                  if (!await launchUrl(_url) ){
+                    throw Exception('Could not launch $_url');
+                  }
+                },
+                // options: const LinkifyOptions(humanize: false),
               ),
               OutlinedButton(
                 onPressed: () {

@@ -52,6 +52,7 @@ class _ProfileState extends State<Profile> with AutomaticKeepAliveClientMixin{
   bool downloadSuccess = false;
   bool _likeLoading = false;
   bool _followLoading = false;
+  bool _isDark = false;
 
   late Map<String, dynamic> _similars={};
   late Map<String, dynamic> _authors={};
@@ -155,6 +156,8 @@ class _ProfileState extends State<Profile> with AutomaticKeepAliveClientMixin{
 
   @override
   Widget build(BuildContext context) {
+    _isDark = Theme.of(context).brightness == Brightness.dark;
+
     super.build(context);
     // print("bbbbbbbbb${widget.videoInfo['body']}");
     final _Info = widget.info.isEmpty? {
@@ -247,7 +250,7 @@ class _ProfileState extends State<Profile> with AutomaticKeepAliveClientMixin{
                                             throw Exception('Could not launch $_url');
                                           }
                                         },
-                                        options: const LinkifyOptions(humanize: false),
+                                        // options: const LinkifyOptions(humanize: false),
                                     )
                                     // Text(_Info['body']),
                                 ],
@@ -293,7 +296,7 @@ class _ProfileState extends State<Profile> with AutomaticKeepAliveClientMixin{
                           ),
                           Skeletonizer(enabled: _likeLoading, child: TextButton(
                             style: ButtonStyle(
-                              backgroundColor: WidgetStateProperty.all(isLiked ? Colors.blue : Colors.grey[300]),
+                              backgroundColor: WidgetStateProperty.all(isLiked ? Colors.blue : _isDark ? Colors.white10 : Colors.grey[300]),
                             ),
                             onPressed: () async {
                               setState(() {
@@ -347,7 +350,7 @@ class _ProfileState extends State<Profile> with AutomaticKeepAliveClientMixin{
                   subtitle: Text("@${_Info['user']?['username'] ?? '作者用户名'}"),
                   trailing: Skeletonizer(enabled: _followLoading, child: TextButton(
                       style: ButtonStyle(
-                        backgroundColor: WidgetStateProperty.all(isFollowed ? Colors.blue : Colors.grey[300]),
+                        backgroundColor: WidgetStateProperty.all(isFollowed ? Colors.blue : _isDark ? Colors.white10 : Colors.grey[300]),
                       ),
                       onPressed: () async {
                         setState(() {
@@ -371,9 +374,10 @@ class _ProfileState extends State<Profile> with AutomaticKeepAliveClientMixin{
                     "tagId": tag['id'],
                   });
               }, style: ButtonStyle(
-                minimumSize: const WidgetStatePropertyAll(Size(50, 0)),
-                maximumSize: const WidgetStatePropertyAll(Size(1000, 30)),
-                  backgroundColor: WidgetStateProperty.all(Colors.grey[200]),),
+                minimumSize: WidgetStatePropertyAll(Size(50, 0)),
+                maximumSize: WidgetStatePropertyAll(Size(1000, 30)),
+                  backgroundColor: WidgetStateProperty.all(_isDark ? Colors.white10 : Colors.grey[200]),
+              ),
                   child: Text(tag['id'],style: const TextStyle(fontSize: 12,height: 1),)
               ))],
             ),

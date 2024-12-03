@@ -42,9 +42,12 @@ class _DrawerView extends State<DrawerView> {
           lead: Icon(Icons.history_outlined),
           text: Text("历史"),
         ),
-        const ListItem(
-          lead: Icon(Icons.settings_outlined),
-          text: Text("设置"),
+        ListItem(
+          lead: const Icon(Icons.settings_outlined),
+          text: const Text("设置"),
+          onItemTap: () {
+            Get.toNamed('/settings');
+          },
         ),
         // TextButton(onPressed: () async {
         //   if (await getAccessToken()){

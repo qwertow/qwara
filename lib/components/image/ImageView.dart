@@ -77,7 +77,7 @@ class ImageViewState extends State<ImageView>{
   double? imgHeight=200;
   int imgIndex = 0;
 
-  bool isNewer = storeController.imgViewVersion;
+  bool isNewer = storeController.settings.imgViewVersion;
 
   late List<double?> _widthList;
   late final List<ImgFile> _fileList=[];

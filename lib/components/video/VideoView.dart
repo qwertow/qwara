@@ -26,7 +26,8 @@ class VideoViewState extends State<VideoView>  with LifecycleAware, LifecycleMix
   double? videoWidth;
   double? videoHeight;
   //后续可能根据设置调整初始值
-  bool iniPlay = false;
+  bool iniPlay = storeController.settings.autoPlay;
+  bool loopPlay = storeController.settings.loopPlay;
   late VideoPlayerController _controller;
   bool vcInit = false;
   bool isPlaying = false;
@@ -56,14 +57,13 @@ class VideoViewState extends State<VideoView>  with LifecycleAware, LifecycleMix
     double totalSeconds = milliseconds / 1000;
 
     // 计算分钟和秒
-    int minutes = (totalSeconds / 60).round();
+    int minutes = (totalSeconds ~/ 60);
     int seconds = (totalSeconds % 60).round();
 
     // 使用 sprintf 或其他格式化方法确保输出格式为分钟:秒，且秒数始终是两位数
     return '$minutes:${seconds.toString().padLeft(2, '0')}';
   }
-  // var oldProportion;
-  //后续可能根据设置调整初始值iniplay
+
   bool wasLifePlaying=false; // 变量用于记录上一个播放状态
   @override
   void onLifecycleEvent(LifecycleEvent event) {
@@ -99,7 +99,7 @@ class VideoViewState extends State<VideoView>  with LifecycleAware, LifecycleMix
 
     if (!listEquals(widget.urlList, initUrlList)) {
       // _updateUrl();
-      _loadVideo();
+      _loadVideo(initializePlay: iniPlay);
     }
   }
 
@@ -122,7 +122,7 @@ class VideoViewState extends State<VideoView>  with LifecycleAware, LifecycleMix
       _controller.value.isPlaying ? _controller.pause() : _controller.play();
   }
 //初始化控制器
-  void _initController(String link, {bool initializePlay = false}) {
+  void _initController(String link , {bool initializePlay = false}) {
 
     _controller = VideoPlayerController.networkUrl(Uri.parse(link))
       ..initialize().then((_) {
@@ -138,7 +138,7 @@ class VideoViewState extends State<VideoView>  with LifecycleAware, LifecycleMix
           eventBus.fire(ControllerReloadEvent(_controller));
         }
         setState(() {});
-      })..addListener(() {
+      })..setLooping(loopPlay)..addListener(() {
         bool wasPlaying = false; // 变量用于记录上一个播放状态
             setState(() {
               isPlaying = _controller.value.isPlaying;
@@ -170,7 +170,7 @@ class VideoViewState extends State<VideoView>  with LifecycleAware, LifecycleMix
   }
 
   //加载视频
-  Future<VideoPlayerController> _loadVideo() async {
+  Future<VideoPlayerController> _loadVideo({bool initializePlay = false}) async {
     String url = "";
     if(initUrlList.isEmpty) {
       initUrlList.addAll(widget.urlList);
@@ -182,7 +182,7 @@ class VideoViewState extends State<VideoView>  with LifecycleAware, LifecycleMix
     }
     if (!_controller.value.isInitialized) {
       //没有视频在播放
-      _initController(url);
+      _initController(url, initializePlay: initializePlay);
     } else {
       // 如果有控制器，我们需要先处理旧的
       final VideoPlayerController oldController = _controller;
@@ -197,7 +197,7 @@ class VideoViewState extends State<VideoView>  with LifecycleAware, LifecycleMix
       // 通过将其设置为null来确保没有使用该控制器
       setState(() {
         _controller.dispose();
-        _initController(url);
+        _initController(url, initializePlay: initializePlay);
       });
 
     }

@@ -67,6 +67,7 @@ class Pager extends StatelessWidget {
         Row(
           children: [
             IconButton(
+              color: Colors.black,
                 style: ButtonStyle(
                     backgroundColor: WidgetStatePropertyAll(
                       currentPage>1?Colors.blue[400]:Colors.grey[400],
@@ -77,9 +78,10 @@ class Pager extends StatelessWidget {
                     pageChanged(currentPage-1);
                   }
                 },
-                icon: const Icon(Icons.keyboard_arrow_left)
+                icon: const Icon(Icons.keyboard_arrow_left,)
             ),
             IconButton(
+                color: Colors.black,
                 enableFeedback: currentPage==totalPages,
                 style: ButtonStyle(
                     backgroundColor: WidgetStatePropertyAll(

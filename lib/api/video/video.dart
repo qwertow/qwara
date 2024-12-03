@@ -1,5 +1,5 @@
 import 'package:qwara/utils/dioRequest.dart';
-
+import 'package:qwara/getX/StoreController.dart';
 
 // void request()async {
 //   Response response;
@@ -17,7 +17,7 @@ import 'package:qwara/utils/dioRequest.dart';
 Future<Map<String, dynamic>> getVideoList({
   String? sort,
   int? page,
-  String rating = 'ecchi',
+  String? rating,
   String? userId,
   int? limit,
   String? exclude,
@@ -30,7 +30,7 @@ Future<Map<String, dynamic>> getVideoList({
     'exclude': exclude,
    'sort': sort,
     'page': page,
-    'rating': rating,
+    'rating': rating=storeController.settings.rating,
     'user': userId,
     'limit': limit,
     "tags": tags?.join('%2C'),

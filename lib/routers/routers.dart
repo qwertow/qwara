@@ -10,6 +10,7 @@ import 'package:qwara/pages/videoDetail/videoDetail.dart';
 import 'package:qwara/pages/videosPage/Favorites.dart';
 
 import '../pages/SearchPage.dart';
+import '../pages/Settings.dart';
 import '../pages/image/ImageDetail.dart';
 
 final Map routes = {
@@ -23,6 +24,7 @@ final Map routes = {
   "/playListDetail":(context,{arguments})=>PlayListDetail(playlist: arguments),
   "/favorites":(context)=>const FavoritesPage(),
   "/search":(context)=>const SearchPage(),
+  "/settings":(context)=>const SettingsPage(),
 };
 
 var onGenerateRoute=(RouteSettings settings){

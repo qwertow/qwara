@@ -17,19 +17,19 @@ class VideoList extends StatelessWidget {
   final bool shrink;
   final int crossAxisCountMobile;
   final int crossAxisCountTablet;
-  String getThumbnailUrl(int index) {
+  String getThumbnailUrl(Map itm) {
     var customThumbnail ;
     var id ;
     var name ;
     String thumbnailUrl = "";
     try {
-      if(items.isEmpty || items[index]["file"]==null){
+      if(items.isEmpty || itm["file"]==null){
         thumbnailUrl = "https:///fake";
       }
-      customThumbnail = items[index]["customThumbnail"];
+      customThumbnail = itm["customThumbnail"];
       // print(customThumbnail.toString());
-      id = customThumbnail != null ? customThumbnail["id"] : items[index]["file"]["id"];
-      name = customThumbnail != null ? customThumbnail["name"] : "thumbnail-00.jpg";
+      id = customThumbnail != null ? customThumbnail["id"] : itm["file"]["id"];
+      name = customThumbnail != null ? customThumbnail["name"] : "thumbnail-${itm['thumbnail'].toString().padLeft(2, '0')}.jpg";
       thumbnailUrl = "https://i.iwara.tv/image/thumbnail/$id/$name";
 
     }catch(e){
@@ -39,8 +39,10 @@ class VideoList extends StatelessWidget {
 
   }
 
+
   @override
   Widget build(BuildContext context) {
+
     final List _items = loading ? List.generate(10, (index) => {
       "title": "Loading...","user": {"name": "Loading..."},
       "numLikes": 0, "file": {"id": "123"}}) : items;
@@ -78,7 +80,9 @@ class VideoList extends StatelessWidget {
                   // height: 100 + index * 10.toDouble(),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(cardCircular),
-                    color: Colors.grey[200],
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.grey[800] // 夜间模式颜色
+                        : Colors.grey[200], // 日间模式颜色
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -91,7 +95,7 @@ class VideoList extends StatelessWidget {
                         child: Skeleton.replace(
                           // height: 100,
                             child: Image.network(
-                            getThumbnailUrl(index),
+                            getThumbnailUrl(_items[index]),
                             fit: BoxFit.fitWidth, // 使宽度填满，并保持高度按比例缩放
                             loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
                               if (loadingProgress == null) {
@@ -119,7 +123,7 @@ class VideoList extends StatelessWidget {
                           style: const TextStyle(
                             fontSize: 15,
                             // fontWeight: FontWeight.bold,
-                            color: Colors.black,
+                            // color: Colors.black,
                           ),
                         ),
                       ),

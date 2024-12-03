@@ -18,6 +18,7 @@ class ImagePage extends StatefulWidget {
 }
 
 class _ImagePageState extends State<ImagePage> with AutomaticKeepAliveClientMixin {
+  bool _isDark = false;
   late int totalPages=0;
   late int currentPage=1;
   late SortType _sortType=SortType.date;
@@ -90,6 +91,7 @@ class _ImagePageState extends State<ImagePage> with AutomaticKeepAliveClientMixi
 
   @override
   Widget build(BuildContext context) {
+    _isDark = Theme.of(context).brightness == Brightness.dark;
     super.build(context);
     const sortTypes = SortType.values;
     return Scaffold(
@@ -131,9 +133,9 @@ class _ImagePageState extends State<ImagePage> with AutomaticKeepAliveClientMixi
                         value: sortType.value,
                         child: Row(
                           children: [
-                            Icon(_getIconForSortType(sortType), color: Colors.black),
+                            Icon(_getIconForSortType(sortType)),
                             const SizedBox(width: 8),
-                            Text(sortType.label, style: const TextStyle(color: Colors.black)),
+                            Text(sortType.label),
                           ],
                         ),
                       );
@@ -141,7 +143,7 @@ class _ImagePageState extends State<ImagePage> with AutomaticKeepAliveClientMixi
                     dropdownColor: Colors.white, // 设置下拉菜单的背景颜色
                     // iconEnabledColor: Colors.blue, // 下拉箭头的颜色
                     underline: Container(), // 隐藏下划线
-                    style: const TextStyle(color: Colors.black), // 字体颜色
+                    style: TextStyle(color: _isDark? Colors.white : Colors.black), // 字体颜色
                   ),
                   Stack(
                     children: [

@@ -46,7 +46,7 @@ class _VideoDetail extends State<VideoDetail>  {
   bool pLisTouched = false;
   bool cLisTouched = false;
   bool isHorizontalSlide = false;
-  bool isNewer = storeController.detailPageVersion;
+  bool isNewer = storeController.settings.detailPageVersion;
 
   void _changeVideoViewSize(PointerMoveEvent pointerMoveEvent) {
     // 判断滑动方向
@@ -569,10 +569,11 @@ class __PlayListsState extends State<_PlayLists> {
   }
   Widget _BodyView() {
     // return Container(height: 999,width: 380, color: Colors.yellowAccent,);
+    bool __isDark = Theme.of(context).brightness == Brightness.dark;
 
     Widget _itemView(int i) {
       return Card(
-        color: Colors.pink[50],
+        color: __isDark?Colors.black54:Colors.pink[50],
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
         ),

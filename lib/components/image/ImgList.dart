@@ -73,7 +73,9 @@ class ImgList extends StatelessWidget {
                 child: Container(
                     width: double.infinity,
                     decoration: BoxDecoration(
-                      color: Colors.grey[200],
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? Colors.grey[800] // 夜间模式颜色
+                          : Colors.grey[200], // 日间模式颜色
                       borderRadius: BorderRadius.circular(cardCircular),
                     ),
                     child: Stack(
@@ -117,8 +119,6 @@ class ImgList extends StatelessWidget {
                                 _items[index] ['title']!,
                                 style: const TextStyle(
                                   fontSize: 15,
-                                  // fontWeight: FontWeight.bold,
-                                  color: Colors.black,
                                 ),
                               ),
                             ),
