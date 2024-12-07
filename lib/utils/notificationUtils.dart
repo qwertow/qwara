@@ -30,7 +30,8 @@ class NotificationHelper {
 
 //  显示通知
   Future<void> showNotification(
-      {required String title,
+      { required int id,
+        required String title,
         required String body,
         required AndroidNotificationDetails details,
       }) async {
@@ -58,7 +59,7 @@ class NotificationHelper {
 
     // 发起一个通知
     await _notificationsPlugin.show(
-      1,
+      id,
       title,
       body,
       platformChannelSpecifics,
