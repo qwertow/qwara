@@ -3,7 +3,7 @@ import 'package:qwara/utils/dioRequest.dart';
 import 'package:qwara/getX/StoreController.dart';
 
 
-Future<void> login({required String username, required String password}) async {
+Future<bool> login({required String username, required String password}) async {
   // await storeController.setToken(null);
   // await storeController.setAccessToken(null);
   print('login username: ${storeController.token}, password: ${storeController.accessToken}');
@@ -12,6 +12,7 @@ Future<void> login({required String username, required String password}) async {
     'email': username,
     'password': password
   });
+  print('login response: ${response.data}');
   if(response.statusCode== 200){
     await storeController.setToken(response.data['token']);
     print('login success');
@@ -19,12 +20,13 @@ Future<void> login({required String username, required String password}) async {
       print('get access token success');
       if(await getUserInfo()) {
         print('get user info success');
+        storeController.setIsTourist(false);
         Get.offAndToNamed('/home');
+        return true;
       }
     }
-    return ;
   }
-
+  return false;
 }
 
 Future<bool> getAccessToken() async {
@@ -75,8 +77,10 @@ Future<bool> getUserInfo() async {
 
 
 Future<void> logout() async {
-  // storeController.setToken(null);
-  Get.toNamed('/login');
+  storeController.setToken(null);
+  storeController.setAccessToken(null);
+  await storeController.setUserInfo(null);
+  Get.offAllNamed('/login');
   return ;
 }
 

@@ -3,6 +3,9 @@ import 'package:qwara/components/ListItem.dart';
 import 'package:qwara/components/MyCard.dart';
 import 'package:get/get.dart' hide Response;
 
+import '../EventBus/EventBus.dart';
+import '../api/user/user.dart';
+
 
 class DrawerView extends StatefulWidget {
   const DrawerView({super.key,this.url});
@@ -34,13 +37,19 @@ class _DrawerView extends State<DrawerView> {
             Get.toNamed('/toPlaylist');
           },
         ),
-        const ListItem(
-          lead: Icon(Icons.download_outlined),
-          text: Text("下载"),
+        ListItem(
+          lead: const Icon(Icons.download_outlined),
+          text: const Text("下载"),
+          onItemTap: (){
+            Get.toNamed('/download');
+          },
         ),
-        const ListItem(
-          lead: Icon(Icons.history_outlined),
-          text: Text("历史"),
+        ListItem(
+          lead: const Icon(Icons.history_outlined),
+          text: const Text("历史"),
+          onItemTap: () {
+            Get.toNamed('/history');
+          },
         ),
         ListItem(
           lead: const Icon(Icons.settings_outlined),

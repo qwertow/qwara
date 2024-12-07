@@ -7,6 +7,8 @@ import 'package:qwara/constant.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:path_provider/path_provider.dart';
 
+import 'LogUtil.dart';
+
 
 BaseOptions options = BaseOptions(
     headers : {
@@ -43,14 +45,21 @@ Dio dio = Dio(options)
       return handler.next(options);
   }, onResponse: (Response response, ResponseInterceptorHandler handler) {
       print("响应拦截器");
-      print(response.data);
+      LogUtil.d(response.data);
       return handler.next(response);
   }, onError: (DioException e, ErrorInterceptorHandler handler) {
        print("错误拦截器");
        print(e);
+       formatError(e);
 
-      formatError(e);
-      return handler.next(e);
+    // 创建一个自定义的响应对象
+    final customResponse = Response(
+    requestOptions: e.requestOptions,
+    statusCode: e.response?.statusCode ?? 500, // 使用错误响应的状态码，或设为 500
+    data: {'error': e.message}, // 自定义返回数据
+    );
+      // return handler.resolve(customResponse);
+    return handler.reject(e);
   }));
 
 void formatError(DioException e) {
@@ -83,6 +92,9 @@ void formatError(DioException e) {
 
 ///使用dio 下载文件
 Future<bool> downLoadFile(String fileUrl,{required String savePath,required String fileName,Function(int received, int total)? receiveProgress}) async{
+
+  Dio dioDownload = Dio();
+
   /// 申请写文件权限
   // bool isPermiss =  await checkPermissFunction();
   bool isDownload = false;
@@ -95,8 +107,10 @@ Future<bool> downLoadFile(String fileUrl,{required String savePath,required Stri
     ///参数二 下载的本地目录文件
     ///参数三 下载监听
     print("开始下载文件 $savePath$fileName");
-    Response response = await dio.download(
-        fileUrl, "$savePath$fileName", onReceiveProgress: receiveProgress);
+    Response response = await dioDownload.download(
+        fileUrl, "$savePath$fileName",
+        onReceiveProgress: receiveProgress,
+    );
     isDownload = response.statusCode == 200;
   // }else{
   //   ///提示用户请同意权限申请

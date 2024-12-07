@@ -1,16 +1,28 @@
 # qwara
 
-A new Flutter project.
+第一次尝试用Flutter制作的app
 
-## Getting Started
+对 https://github.com/re-ovo/awara 拙劣的模仿
 
-This project is a starting point for a Flutter application.
+本来是在用这位佬的软件的时候遇到一些小bug，想搬源码来改一下，结果发现删库了，于是这个项目诞生了
 
-A few resources to get you started if this is your first Flutter project:
+My first attempt at creating an app using Flutter
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+## About IOS
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+虽然Flutter是跨平台的，但本人没有IOS手机可以测试，再又动过一些源码，IOS大概率用不了
+
+## 回复
+
+楼中楼不想做了，编辑不想做了
+
+## 论坛
+
+不想做了
+
+## And other
+
+没有的功能就是不想做了，有改进的意见可以提
+
+
+

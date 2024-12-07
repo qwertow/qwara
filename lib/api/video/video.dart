@@ -30,7 +30,7 @@ Future<Map<String, dynamic>> getVideoList({
     'exclude': exclude,
    'sort': sort,
     'page': page,
-    'rating': rating=storeController.settings.rating,
+    'rating': rating ?? storeController.settings.rating,
     'user': userId,
     'limit': limit,
     "tags": tags?.join('%2C'),
@@ -56,11 +56,12 @@ Future<List> getVideoUrls(String fileUrl,String xVersion)async {
   print('getVideoUrl');
   dio.options.headers['X-Version'] = xVersion;
   final response = await dio.get(fileUrl);
+  dio.options.headers.remove('X-Version');
   // print(response.data.toString());
   return response.data;
 }
 //获取订阅视频
-Future<Map<String, dynamic>> getSubscribedVideos({ required int page, String rating = 'ecchi'})async {
+Future<Map<String, dynamic>> getSubscribedVideos({ required int page,String? rating })async {
   print('getSubscribedVideos');
   // dio.options.headers['Authorization'] = 'Bearer ${storeController.accessToken}';
 
@@ -69,7 +70,7 @@ Future<Map<String, dynamic>> getSubscribedVideos({ required int page, String rat
       queryParameters: {
         'subscribed': true,
         'page': page-1,
-        'rating': rating
+        'rating': rating ?? storeController.settings.rating,
       }
   );
   // print(response.data.toString());

@@ -4,7 +4,6 @@ import 'package:qwara/constant.dart';
 import 'package:qwara/getX/StoreController.dart';
 import 'package:get/get.dart' hide Response;
 
-final storeController = Get.find<StoreController>();
 
 class MyCard extends StatefulWidget {
   const MyCard({

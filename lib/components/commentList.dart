@@ -1,7 +1,7 @@
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:qwara/api/comment/comment.dart';
-import 'package:qwara/components/MyCard.dart';
+import 'package:qwara/getX/StoreController.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:get/get.dart' hide Response;
 

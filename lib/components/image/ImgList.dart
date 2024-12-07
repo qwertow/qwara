@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:qwara/constant.dart';
 import 'package:responsive_builder/responsive_builder.dart';
 import 'package:skeletonizer/skeletonizer.dart';
-
+import 'package:cached_network_image/cached_network_image.dart';
 class ImgList extends StatelessWidget {
   const ImgList({
     super.key,
@@ -88,30 +89,22 @@ class ImgList extends StatelessWidget {
                                 topLeft: Radius.circular(cardCircular), // 左上角圆角
                                 topRight: Radius.circular(cardCircular), // 右上角圆角
                               ),
-                              child:  Skeleton.replace(
-                                  // height: 100,
-                                  child:Image.network(
-                                  getThumbnailUrl(index),
-                                  headers: const {
-                                    "Referer": "https://www.iwara.tv/"
-                                  },
-                                  fit: BoxFit.fitWidth, // 使宽度填满，并保持高度按比例缩放
-                                  loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
-                                    if (loadingProgress == null) {
-                                      return child;
-                                    }
-                                    return Center(
-                                      child: CircularProgressIndicator(
-                                        value: loadingProgress.expectedTotalBytes != null
-                                            ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
-                                            : null,
+                              child: ConstrainedBox(constraints: const BoxConstraints(
+                                  minHeight: 100,
+                                ),child:Skeleton.replace(
+                                    child: CachedNetworkImage(
+                                      httpHeaders: IMG_HEADERS,
+                                      imageUrl: getThumbnailUrl(index),
+                                      fit: BoxFit.fitWidth, // 使宽度填满，并保持高度按比例缩放
+                                      progressIndicatorBuilder: (context, url, downloadProgress) => Center(
+                                        child: CircularProgressIndicator(
+                                          value: downloadProgress.progress,
+                                        ),
                                       ),
-                                    );
-                                  },
-                                  errorBuilder: (ctx,err,stackTrace) => Image.asset(
-                                    'assets/images/780.jfif',//默认显示图片
-                                  )
-                              ) ),
+                                      errorWidget: (context, url, error) => const Icon(Icons.error,color: Colors.red,size: 50,),
+                                    ),
+                                ),
+                              ),
                             ),
                             Container(
                               margin: const EdgeInsets.fromLTRB(5,5,5,0),

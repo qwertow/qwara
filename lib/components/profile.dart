@@ -1,15 +1,18 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:intl/intl.dart';
+// import 'package:intl/intl.dart';
 import 'package:qwara/api/img/img.dart';
 import 'package:qwara/api/video/video.dart';
 import 'package:qwara/components/image/ImgList.dart';
 import 'package:qwara/components/SlidingPanel3Controller.dart';
 import 'package:qwara/enum/Enum.dart';
+import 'package:qwara/getX/StoreController.dart';
 import 'package:qwara/utils/DownLoadUtil.dart';
+import 'package:qwara/utils/dioRequest.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:get/get.dart' hide Response;
+import '../utils/TimeUtil.dart';
 import 'video/VideoList.dart';
 import 'package:sizer/sizer.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -27,7 +30,10 @@ class Profile extends StatefulWidget {
     this.onSetPlaylist,
     this.onDownload,
     this.handleLIke,
-    this.handleFollow, this.scrollPhysics, this.scrollController, this.setClipboard, required this.type
+    this.handleFollow,
+    this.scrollPhysics,
+    this.scrollController,
+    this.setClipboard, required this.type, this.dClarity
   });
 
   final Map<String, dynamic> info;
@@ -40,7 +46,7 @@ class Profile extends StatefulWidget {
   final ScrollController? scrollController;
   final Function(String url)? setClipboard;
   final ProfileType type;
-
+  final List<Clarity>? dClarity;
   @override
   State<Profile> createState() => _ProfileState();
 }
@@ -97,6 +103,7 @@ class _ProfileState extends State<Profile> with AutomaticKeepAliveClientMixin{
         isFollowed = widget.info['user']?['following'] ?? false;
       });
     }
+
   }
 
   String getVideoDownloadUrl(Clarity clarity) {
@@ -105,13 +112,13 @@ class _ProfileState extends State<Profile> with AutomaticKeepAliveClientMixin{
 
   bool isExpanded = false; // 控制展开状态
   SliverPanel3Controller slidingPanel3Controller = SliverPanel3Controller();
-  String formatDate(String dateString) {
-    DateTime dateTime = DateTime.parse(dateString); // 将日期字符串解析为 DateTime 对象
-    return DateFormat('yyyy-MM-dd HH:mm:ss').format(dateTime); // 格式化日期
-  }
+
   /// showDialog
   showDialogFunction(context, Clarity clarity) {
-    beforeDownload();
+    String timestamp = DateTime.now().millisecondsSinceEpoch.toString();
+    String fileTitle = "${widget.info['title']}_${clarity.value}_$timestamp";
+    fileTitle = fileTitle.replaceAll('/', '_');
+    // beforeDownload();
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -126,22 +133,31 @@ class _ProfileState extends State<Profile> with AutomaticKeepAliveClientMixin{
               children: [
                 const Text("保存到"),
                 OutlinedButton(onPressed: () async {
-                  await beforeDownload();
-                  Navigator.pop(context);
-                  downloadSuccess = await downloading(getVideoDownloadUrl(clarity),widget.info['title'],suffix: ".mp4");
+                  if(!await beforeDownload(widget.info['id'])){
+                    return;
+                  }
+                  String path = await getPhoneLocalPath();
+                  Get.back();
+                  downloadSuccess = await downloading(getVideoDownloadUrl(clarity),fileTitle,suffix: ".mp4");
+                  if(downloadSuccess) {
+                    await storeController.setDownloadVideos(DownloadVideo(widget.info, "$path$fileTitle", DateTime.now()));
+                    // storeController.removeDownloadVideo(widget.info['id']);
+                  }
                   downCallback(downloadSuccess);
                 }, child: const Text("下载文件夹")),
                 OutlinedButton(onPressed: () async {
-                  await beforeDownload();
-                  Navigator.pop(context);
-                  downloadSuccess = await downloading(getVideoDownloadUrl(clarity),widget.info['title'],suffix: ".mp4");;
+                  if(!await beforeDownload(widget.info['id'])){
+                    return;
+                  }
+                  Get.back();
+                  downloadSuccess = await downloading(getVideoDownloadUrl(clarity),fileTitle,suffix: ".mp4");;
                   if(downloadSuccess) {
-                    moveToAlbum(widget.info['title'],suffix: ".mp4");
+                    moveToAlbum(fileTitle,suffix: ".mp4");
                   }
                   downCallback(downloadSuccess);
                 }, child: const Text("相册")),
                 OutlinedButton(onPressed: () async {
-                  Navigator.pop(context);
+                  Get.back();
                   Clipboard.setData(ClipboardData(text: getVideoDownloadUrl(clarity)));
                   showDownSnackBar( "下载链接已复制到剪贴板", type: DownloadStatus.success);
                 }, child: const Text("复制下载链接")),
@@ -275,7 +291,7 @@ class _ProfileState extends State<Profile> with AutomaticKeepAliveClientMixin{
                           showDialogFunction(context, clarity);
                         },
                         itemBuilder: (context) {
-                          return Clarity.values.map((clarity) {
+                          return widget.dClarity!.map((clarity) {
                             return PopupMenuItem<Clarity>(
                               value: clarity,
                               child: Text(clarity.value, style: const TextStyle(color: Colors.black)),
@@ -369,13 +385,14 @@ class _ProfileState extends State<Profile> with AutomaticKeepAliveClientMixin{
               runSpacing: -10,
               spacing: 5,
               children: [..._Info['tags']?.map((tag) => TextButton(onPressed: () {
-                  Get.toNamed('/home', arguments: {
-                    "index":widget.type == ProfileType.video? 1:2,
-                    "tagId": tag['id'],
-                  });
+                if(widget.type == ProfileType.video) {
+                  Get.toNamed('/videoPage', arguments: tag['id']);
+                }else{
+                  Get.toNamed('/imagePage', arguments: tag['id']);
+                }
               }, style: ButtonStyle(
-                minimumSize: WidgetStatePropertyAll(Size(50, 0)),
-                maximumSize: WidgetStatePropertyAll(Size(1000, 30)),
+                minimumSize: const WidgetStatePropertyAll(Size(50, 0)),
+                maximumSize: const WidgetStatePropertyAll(Size(1000, 30)),
                   backgroundColor: WidgetStateProperty.all(_isDark ? Colors.white10 : Colors.grey[200]),
               ),
                   child: Text(tag['id'],style: const TextStyle(fontSize: 12,height: 1),)

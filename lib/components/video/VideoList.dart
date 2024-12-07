@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:responsive_builder/responsive_builder.dart';
 import 'package:skeletonizer/skeletonizer.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 class VideoList extends StatelessWidget {
   const VideoList({
     super.key,
@@ -9,7 +10,7 @@ class VideoList extends StatelessWidget {
     required this.loading,
     this.scrollPhysics,
     this.shrink=false, this.crossAxisCountMobile=2, this.crossAxisCountTablet=4,
-
+    this.customBottomChild,
   });
   final List items;
   final bool loading;
@@ -17,6 +18,7 @@ class VideoList extends StatelessWidget {
   final bool shrink;
   final int crossAxisCountMobile;
   final int crossAxisCountTablet;
+  final Widget? Function(BuildContext context, int index)? customBottomChild;
   String getThumbnailUrl(Map itm) {
     var customThumbnail ;
     var id ;
@@ -92,29 +94,21 @@ class VideoList extends StatelessWidget {
                           topLeft: Radius.circular(cardCircular), // 左上角圆角
                           topRight: Radius.circular(cardCircular), // 右上角圆角
                         ),
-                        child: Skeleton.replace(
-                          // height: 100,
-                            child: Image.network(
-                            getThumbnailUrl(_items[index]),
-                            fit: BoxFit.fitWidth, // 使宽度填满，并保持高度按比例缩放
-                            loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
-                              if (loadingProgress == null) {
-                                return child;
-                              }
-                              return Center(
-                                child: CircularProgressIndicator(
-                                  value: loadingProgress.expectedTotalBytes != null
-                                      ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
-                                      : null,
+                        child:  ConstrainedBox(constraints: const BoxConstraints(
+                            minHeight: 100,
+                          ),child: Skeleton.replace(
+                              child:CachedNetworkImage(
+                                imageUrl: getThumbnailUrl(_items[index]),
+                                fit: BoxFit.fitWidth, // 使宽度填满，并保持高度按比例缩放
+                                progressIndicatorBuilder: (context, url, downloadProgress) => Center(
+                                  child: CircularProgressIndicator(
+                                    value: downloadProgress.progress,
+                                  ),
                                 ),
-                              );
-                            },
-                            errorBuilder: (ctx,err,stackTrace) => Image.asset(
-                              'assets/images/780.jfif',//默认显示图片
-                              // height: 250,
-                              // width: double.infinity
-                            )
-                        )),
+                                errorWidget: (context, url, error) => const Icon(Icons.error,color: Colors.red,size: 50,),
+                              ),
+                          ),
+                        )
                       ),
                       Container(
                         margin: const EdgeInsets.fromLTRB(5,5,5,0),
@@ -146,7 +140,8 @@ class VideoList extends StatelessWidget {
                             ),
                           ],
                         ),
-                      )
+                      ),
+                      customBottomChild?.call(context, index) ?? const SizedBox.shrink(),
                     ],
                   )
               ),

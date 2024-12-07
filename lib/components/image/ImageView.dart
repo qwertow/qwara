@@ -146,8 +146,6 @@ class ImageViewState extends State<ImageView>{
           child: AnimatedSize(duration: const Duration(milliseconds: 250),child: Stack(
             children: [
 
-              // AnimatedSize(duration: const Duration(milliseconds: 1000),
-              // child:
               Opacity(
                 opacity: 0.0,
                 child: AspectRatio(
@@ -185,7 +183,6 @@ class ImageViewState extends State<ImageView>{
                       },
                     )),
               ),
-              // ),
 
               SizedBox(
                 height: imgHeight,
@@ -197,20 +194,25 @@ class ImageViewState extends State<ImageView>{
                     });
                   },
                   itemBuilder: (context, index) {
+                    ImgFile img = _fileList[index];
+
+                    String timestamp = DateTime.now().millisecondsSinceEpoch.toString();
+                    int dotIndex = img.name.lastIndexOf('.');
+                    String fileNameWithTimestamp= img.name ;
+                    if (dotIndex!= -1) {
+                      fileNameWithTimestamp = "${img.name.substring(0, dotIndex)}_$timestamp${img.name.substring(dotIndex)}";
+                    }
+
                     return InstaImageViewer(
-                      imageUrl: "$originPrefix${_fileList[index].id}/${_fileList[index].name}",
+                      imageUrl: "$originPrefix${img.id}/${img.name}",
                       headers: IMG_HEADERS,
                       child: Stack(
                         alignment: Alignment.center,
                         children: [
-                          // AnimatedSize(
-                          //     duration: const Duration(milliseconds: 300),
-                          // alignment: Alignment.center,
-                          // child:
                           AspectRatio(
-                            aspectRatio: _fileList[index].width / _fileList[index].height,
+                            aspectRatio: img.width / img.height,
                             child:  Image.network(
-                              "$largePrefix${_fileList[index].id}/${_fileList[index].name}",
+                              "$largePrefix${img.id}/${img.name}",
                               fit: BoxFit.fitHeight,
                               loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
                                 if (loadingProgress == null) {
@@ -229,16 +231,22 @@ class ImageViewState extends State<ImageView>{
                               ),
                             ),
                           ),
-                          // ),
+
                           Positioned(
                             bottom: 10,
                             right: 10,
                             child: IconButton(
                               onPressed: () async {
-                                await beforeDownload();
-                                if(await downloading("$originPrefix${_fileList[index].id}/${_fileList[index].name}", widget.fileList[index]['name'])) {
-                                  moveToAlbum(widget.fileList[index]['name']);
+                                bool isDownload = false;
+                                if(!await beforeDownload(img.id)){
+                                  return;
                                 }
+                                isDownload =await downloading("$originPrefix${img.id}/${img.name}", fileNameWithTimestamp);
+                                if(isDownload) {
+                                  await moveToAlbum(fileNameWithTimestamp);
+                                }
+                                downCallback(isDownload);
+
                               },
                               icon: const Icon(
                                 Icons.download,
@@ -259,6 +267,12 @@ class ImageViewState extends State<ImageView>{
       return  Wrap(
         direction: Axis.horizontal,
         children: _fileList.asMap().map((index, img) {
+          String timestamp = DateTime.now().millisecondsSinceEpoch.toString();
+          int dotIndex = img.name.lastIndexOf('.');
+          String fileNameWithTimestamp= img.name ;
+          if (dotIndex!= -1) {
+            fileNameWithTimestamp = "${img.name.substring(0, dotIndex)}_$timestamp${img.name.substring(dotIndex)}";
+          }
           return MapEntry(
               index,
               GestureDetector(
@@ -329,9 +343,9 @@ class ImageViewState extends State<ImageView>{
                             right: 10,
                             child: IconButton(
                               onPressed: () async {
-                                await beforeDownload();
-                                if(await downloading("$originPrefix${img.id}/${img.name}", widget.fileList[index]['name'])) {
-                                  moveToAlbum(widget.fileList[index]['name']);
+                                await beforeDownload(img.id);
+                                if(await downloading("$originPrefix${img.id}/${img.name}", fileNameWithTimestamp)) {
+                                  moveToAlbum(fileNameWithTimestamp);
                                 }
                               },
                               icon: const Icon(

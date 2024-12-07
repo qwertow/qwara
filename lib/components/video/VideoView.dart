@@ -9,12 +9,15 @@ import 'package:qwara/pages//videoDetail/ControlMask.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 import 'package:lifecycle/lifecycle.dart';
 
+import '../../enum/Enum.dart';
+
 class VideoView extends StatefulWidget {
-  const VideoView({super.key, required this.urlList, this.height, this.width});
+  const VideoView({super.key, required this.urlList, this.height, this.width, required this.pClarity});
 
   final List urlList;
   final double? height;
   final double? width;
+  final List<Clarity> pClarity;
 
   @override
   State<VideoView> createState() => VideoViewState();
@@ -22,7 +25,7 @@ class VideoView extends StatefulWidget {
 
 class VideoViewState extends State<VideoView>  with LifecycleAware, LifecycleMixin {
   List initUrlList = [];
-  String definition = storeController.clarityStorage?.value ?? "360";
+  Clarity definition = storeController.clarityStorage ?? Clarity.low;
   double? videoWidth;
   double? videoHeight;
   //后续可能根据设置调整初始值
@@ -68,13 +71,12 @@ class VideoViewState extends State<VideoView>  with LifecycleAware, LifecycleMix
   @override
   void onLifecycleEvent(LifecycleEvent event) {
     print("onLifecycleEvent: $event");
-
+    // final currentRouteName = ModalRoute.of(context)?.settings.name;
     if (event == LifecycleEvent.inactive) {
       wasLifePlaying = isPlaying;
       if(wasLifePlaying){
         _controller.pause();
       }
-
     }
     if (event == LifecycleEvent.active) {
       if(wasLifePlaying){
@@ -87,6 +89,7 @@ class VideoViewState extends State<VideoView>  with LifecycleAware, LifecycleMix
   @override
   void initState() {
     super.initState();
+
     oldDura = const Duration(seconds: 0);
     // _updateUrl();
     _initController("https://000", initializePlay: iniPlay);
@@ -99,6 +102,9 @@ class VideoViewState extends State<VideoView>  with LifecycleAware, LifecycleMix
 
     if (!listEquals(widget.urlList, initUrlList)) {
       // _updateUrl();
+      if(!widget.pClarity.contains(definition)){
+        definition=Clarity.low;
+      }
       _loadVideo(initializePlay: iniPlay);
     }
   }
@@ -176,7 +182,7 @@ class VideoViewState extends State<VideoView>  with LifecycleAware, LifecycleMix
       initUrlList.addAll(widget.urlList);
     }
     try{
-      url="https://${widget.urlList.firstWhere((element)=>element["name"]==definition)["src"]["view"]}";
+      url="https://${widget.urlList.firstWhere((element)=>element["name"]==definition.value)["src"]["view"]}";
     }catch(e){
 
     }
@@ -223,7 +229,7 @@ class VideoViewState extends State<VideoView>  with LifecycleAware, LifecycleMix
           ),
         ),
         LinearProgressIndicator(
-          backgroundColor: Colors.greenAccent,
+          backgroundColor: Colors.black,
           value: proportion,
           valueColor: const AlwaysStoppedAnimation<Color>(Colors.red),
         ),
@@ -318,11 +324,11 @@ class VideoViewState extends State<VideoView>  with LifecycleAware, LifecycleMix
                 height: videoHeight,
                 switchClarity: (clarity) {
                   setState(() {
-                    definition=clarity.value;
+                    definition=clarity;
                   });
                   storeController.setClarity(clarity);
                   _loadVideo();
-                },
+                }, cClarity: widget.pClarity,
               ):Container(
                 height: videoHeight ?? 0,
                 width: 100.w,

@@ -18,6 +18,8 @@ import 'package:sizer/sizer.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:get/get.dart';
 
+import '../../enum/Enum.dart';
+
 
 class VideoDetail extends StatefulWidget {
   const VideoDetail({
@@ -32,6 +34,7 @@ class VideoDetail extends StatefulWidget {
 }
 
 class _VideoDetail extends State<VideoDetail>  {
+  List<Clarity> allClarity=[];
 
   final GlobalKey<VideoViewState> videoViewKey = GlobalKey<VideoViewState>();
 
@@ -270,7 +273,25 @@ class _VideoDetail extends State<VideoDetail>  {
         setState(() {
           videoUrls.clear();
           videoUrls.addAll(res);
+          if(allClarity.isEmpty){
+            setState(() {
+              for (var item in videoUrls) {
+                switch (item["name"]) {
+                  case "360":
+                    allClarity.add(Clarity.low);
+                    break;
+                  case "540":
+                    allClarity.add(Clarity.medium);
+                    break;
+                  case "Source":
+                    allClarity.add(Clarity.source);
+                    break;
+                }
+              }
+            });
+          }
         });
+        storeController.setHistoryVideo(HistoryVideo(videoDetail, DateTime.now()));
       }catch(e){
         print(e);
       }
@@ -324,6 +345,7 @@ class _VideoDetail extends State<VideoDetail>  {
 
   Widget _buildVideoProfile() {
     return Profile(
+      dClarity: allClarity,
       type: ProfileType.video,
       scrollPhysics: _scrollPhysics,
       // onDownload: _downloadVideo,
@@ -370,6 +392,7 @@ class _VideoDetail extends State<VideoDetail>  {
             // duration: const Duration(milliseconds: 30000),
             child:
             VideoView(
+              pClarity: allClarity,
               key: videoViewKey,
               urlList: videoUrls,
               // width: _videoViewWidth,

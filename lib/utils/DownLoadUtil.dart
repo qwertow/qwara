@@ -72,34 +72,46 @@ void showDownSnackBar( String message, {DownloadStatus? type}) {
   }
 }
 
-///当前进度进度百分比  当前进度/总进度 从0-1
+int _idCounter = 0;
+Map<String,int> _downloadingMap = {"0":0};
 Future<bool> downloading(String url ,String title, {String? suffix}) async {
   Fluttertoast.showToast(msg: "开始下载");
 
   String _fileName = title;
   _fileName += suffix ?? "";
-  return await downLoadFile(url,
+  _downloadingMap[_fileName] = _idCounter++;
+  return downLoadFile(url,
       savePath: await getPhoneLocalPath(),
       fileName: _fileName,
       receiveProgress: (received, total) {
         if (total != -1) {
           ///当前下载的百分比例
-          print((received / total * 100).toStringAsFixed(0) + "%");
+          // print((received / total * 100).toStringAsFixed(0) + "%");
           // CircularProgressIndicator(value: currentProgress,) 进度 0-1
           _notificationHelper.showNotification(
-            title: '下载',
-            body: _fileName,
-            details: AndroidNotificationDetails("downloadChannelId01",_fileName,
+            id: _downloadingMap[_fileName]!,
+            title: _fileName,
+            body: "${(received/1000000).toStringAsFixed(2)}M/${(total/1000000).toStringAsFixed(2)}M",
+            details: AndroidNotificationDetails(
+              _fileName,
+              "DownloadNotification",
               progress: received,
               maxProgress: total,
               showProgress: true,
+              enableVibration: false,
+              vibrationPattern: null,
+              playSound: false,
+              importance: Importance.low,
+              priority: Priority.low,
             ),
           );
         }
       }
   );
 }
-Future<void> beforeDownload() async {
+
+Future<bool> beforeDownload(String id) async {
+
   if(await Permission.notification.isDenied){
     Get.snackbar(
       "权限申请",
@@ -111,6 +123,7 @@ Future<void> beforeDownload() async {
     );
     Permission.notification.request();
   }
+  return true;
 }
 
 void downCallback(bool success) {

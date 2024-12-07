@@ -76,9 +76,8 @@ class _MyAppState extends State<MyApp> {
 }
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, this.iniIndex, this.sortTag});
-  final int? iniIndex;
-  final String? sortTag;
+  const MyHomePage({super.key});
+
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
@@ -86,21 +85,20 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   int _currentIndex = 0;
-  late PageController _pageController = PageController();
+  final PageController _pageController = PageController();
   final storeController=Get.put(StoreController());
   late Map<String, dynamic> currUser={};
   late Timer _timer;
   @override
   void initState() {
     super.initState();
-    _currentIndex = widget.iniIndex ?? 0;
-    _pageController=PageController(initialPage: _currentIndex);
+
     currUser=storeController.userInfo ?? {};
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _checkLoginStatus();
     });
     refreshAccessToken(true);
-    _timer = Timer.periodic(const Duration(hours: 1), (timer) async {
+    _timer = Timer.periodic(const Duration(minutes: 30), (timer) async {
      refreshAccessToken(false);
     });
   }
@@ -126,7 +124,8 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
 
     if (!isLoggedIn && !storeController.isTourist) {
       // 如果用户未登录且非游客，则跳转到登录页面
-      Navigator.of(context).pushNamed("/login");
+      Get.offAndToNamed("/login");
+      // Navigator.of(context).pushNamed("/login");
     }
   }
 
@@ -246,10 +245,10 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                   _currentIndex = index;
                 });
               },
-              children: [
-                const Home(), // 页面1
-                VideosPage(iniSortTag: widget.sortTag),
-                ImagePage(iniSortTag: widget.sortTag)// 页面2
+              children: const [
+                Home(), // 页面1
+                VideosPage(),
+                ImagePage()// 页面2
               ],
             ),
           ),

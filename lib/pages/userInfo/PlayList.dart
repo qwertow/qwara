@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:qwara/api/subscribe/playList.dart';
-import 'package:qwara/components/MyCard.dart';
+import 'package:qwara/getX/StoreController.dart';
 import 'package:qwara/components/PlayLists.dart';
 
 import '../../components/pager.dart';

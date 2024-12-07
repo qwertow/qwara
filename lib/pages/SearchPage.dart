@@ -26,10 +26,10 @@ class _SearchPageState extends State<SearchPage> {
   }
   final List<Map<String, dynamic>> _results = [];
   SearchType _searchType = SearchType.video;
-  SearchType _srvT=SearchType.nothing;
+  SearchType _srcT=SearchType.nothing;
   Future<void> _search() async {
       setState(() {
-        _srvT=_searchType;
+        _srcT=_searchType;
         _loading = true;
       });
       Map<String, dynamic> res = await search(_searchController.text, _searchType.value, currentPage);
@@ -45,7 +45,7 @@ class _SearchPageState extends State<SearchPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        // backgroundColor: Colors.white,
           scrolledUnderElevation: 0.0,
         title: const Text('Search Page'),
       ),
@@ -56,7 +56,8 @@ class _SearchPageState extends State<SearchPage> {
               margin: EdgeInsets.symmetric(horizontal: 10.w),
               padding: const EdgeInsets.symmetric(horizontal: 12.0),
               decoration: BoxDecoration(
-                color: Colors.grey[200],
+                border: Border.all(color: Colors.grey),
+                // color: Colors.grey[200],
                 borderRadius: BorderRadius.circular(30.0),
               ),
               child: Row(
@@ -99,7 +100,7 @@ class _SearchPageState extends State<SearchPage> {
             ),
             const SizedBox(height: 16.0),
             Expanded(
-              child: _buildSearchContent(_srvT,_results,_loading),
+              child: _buildSearchContent(_srcT,_results,_loading),
             ),
             Pager(currentPage: currentPage, pageChanged: _pageChanged, totalPages: totalPages)
           ],

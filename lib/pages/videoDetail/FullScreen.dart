@@ -9,10 +9,14 @@ import 'package:qwara/enum/Enum.dart';
 
 class FullScreen extends StatefulWidget {
   const FullScreen({
-    super.key, required this.controller, this.switchClarity,
+    super.key,
+    required this.controller,
+    this.switchClarity, this.onBack, required this.FpClarity,
   });
   final VideoPlayerController controller;
   final Function(Clarity clarity)? switchClarity;
+  final Function? onBack;
+  final List<Clarity> FpClarity;
   @override
   State<FullScreen> createState() => _FullScreenState();
 }
@@ -47,9 +51,10 @@ class _FullScreenState extends State<FullScreen> {
   }
   @override
   void initState() {
+    print("FullScreen initState");
     super.initState();
     _controller = widget.controller;
-
+    _controller.play();
     if(_controller.value.aspectRatio>=1){
       SystemChrome.setPreferredOrientations([
         DeviceOrientation.landscapeLeft,
@@ -70,7 +75,6 @@ class _FullScreenState extends State<FullScreen> {
       setState(() {
         _controller = event.controller;
       });
-      print("eventBus");
     });
   }
   bool showOverlay = false; // 控制遮罩层的显隐
@@ -92,6 +96,7 @@ class _FullScreenState extends State<FullScreen> {
   @override
   void dispose() {
     super.dispose();
+    widget.onBack?.call();
     _controller.removeListener(listener);
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
@@ -168,7 +173,7 @@ class _FullScreenState extends State<FullScreen> {
               child: showOverlay? ControlMask(
                 switchClarity: widget.switchClarity,
                 controller: _controller,
-                fullScreen: true,
+                fullScreen: true, cClarity: [],
                 // width: MediaQuery.of(context).size.width ,
                 // height: MediaQuery.of(context).size.height,
               ): Container(

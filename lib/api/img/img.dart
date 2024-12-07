@@ -18,7 +18,7 @@ Future<Map<String, dynamic>> getImgList({
     'exclude': exclude,
     'sort': sort,
     'page': page,
-    'rating': rating=storeController.settings.rating,
+    'rating': rating ?? storeController.settings.rating,
     'user': userId,
     'limit': limit,
     "tags": tags?.join('%2C'),
@@ -49,7 +49,7 @@ Future<Map<String, dynamic>> getSimilarImgs(String imgId)async {
 }
 
 //获取订阅的图片列表
-Future<Map<String, dynamic>> getSubscribedImgs({ required int page, String rating = 'ecchi',int limit = 24 })async {
+Future<Map<String, dynamic>> getSubscribedImgs({ required int page, String? rating ,int limit = 24 })async {
   print('getSubscribedImgs $page $rating $limit');
   // dio.options.headers['Authorization'] = 'Bearer ${storeController.accessToken}';
 
@@ -58,7 +58,7 @@ Future<Map<String, dynamic>> getSubscribedImgs({ required int page, String ratin
       queryParameters: {
         'subscribed': true,
         'page': page-1,
-        'rating': rating,
+        'rating': rating ?? storeController.settings.rating,
         // 'limit': limit
       }
   );

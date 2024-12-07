@@ -12,9 +12,10 @@ class ControlMask extends StatefulWidget{
     required this.controller,
     required this.fullScreen,
     this.width,
-    this.height, this.switchClarity,
+    this.height, this.switchClarity, required this.cClarity,
   });
   final VideoPlayerController controller;
+  final List<Clarity> cClarity;
   //是否在全屏显示
   final bool fullScreen;
   final double? width;
@@ -166,7 +167,7 @@ class _ControlMaskState extends State<ControlMask> with TickerProviderStateMixin
 
                 },
                 itemBuilder: (context) {
-                  return Clarity.values.map((clarity) {
+                  return widget.cClarity.map((clarity) {
                     return PopupMenuItem<Clarity>(
                       value: clarity,
                       child: Text(clarity.value, style: const TextStyle(color: Colors.white)),
@@ -213,7 +214,11 @@ class _ControlMaskState extends State<ControlMask> with TickerProviderStateMixin
                       onPressed: (){
                         Navigator.of(context)
                             .push(MaterialPageRoute(builder: (context) {
-                          return FullScreen(controller: _controller,switchClarity: widget.switchClarity,);
+                              return FullScreen(
+                                FpClarity: widget.cClarity,
+                                  controller: _controller,
+                                  switchClarity: widget.switchClarity
+                              );
                         }));
                       },
                       icon: const Icon(Icons.fullscreen, color: Colors.white)

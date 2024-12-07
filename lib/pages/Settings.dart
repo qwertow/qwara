@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:qwara/api/user/user.dart';
 import 'package:qwara/constant.dart';
 import 'package:qwara/EventBus/EventBus.dart';
 import 'package:qwara/getX/StoreController.dart';
+import 'package:get/get.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -26,7 +28,7 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('设置'),
+        title: const Text('设置'),
       ),
       body: ListView(
         children: <Widget>[
@@ -36,7 +38,7 @@ class _SettingsPageState extends State<SettingsPage> {
           ListTile(
             leading: const Icon(Icons.filter_b_and_w),
             title: const Text('分级'),
-            subtitle: const Text('控制非订阅内容'),
+            subtitle: const Text('控制内容分级'),
             trailing: DropdownButton<String>(
               value: _settings.rating,
               onChanged: (String? newValue) {
@@ -54,10 +56,88 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
           ),
           ListTile(
+            leading: const Icon(Icons.history),
+            title: const Text('最大历史记录数量'),
+            subtitle: const Text('控制最大历史记录数量'),
+            trailing: DropdownButton<int?>(
+              value: _settings.maxHistoryRecords, // 直接使用 int? 类型
+              onChanged: (int? newValue) {
+                setState(() {
+                  _settings.maxHistoryRecords = newValue; // 直接赋值
+                });
+              },
+              items: <int?>[300, 500, 1000, null]
+                  .map<DropdownMenuItem<int?>>((int? value) {
+                return DropdownMenuItem<int?>(
+                  value: value,
+                  child: Text(value?.toString() ?? '不限制'),
+                );
+              }).toList(),
+            ),
+          ),
+          ListTile(
+            leading: const Icon(Icons.download),
+            title: const Text('最大下载记录数量'),
+            subtitle: const Text('控制最大下载记录数量'),
+            trailing: DropdownButton<int?>(
+              value: _settings.maxDownloadRecords, // 直接使用 int? 类型
+              onChanged: (int? newValue) {
+                setState(() {
+                  _settings.maxDownloadRecords = newValue; // 直接赋值
+                });
+              },
+              items: <int?>[300, 500, 1000, null]
+                  .map<DropdownMenuItem<int?>>((int? value) {
+                return DropdownMenuItem<int?>(
+                  value: value,
+                  child: Text(value?.toString() ?? '不限制'),
+                );
+              }).toList(),
+            ),
+          ),
+          ListTile(
             leading: const Icon(Icons.file_copy),
             title: const Text('下载文件夹位置'),
             subtitle: const Text('/storage/emulated/0/Android/data/com.qwer.qwara/files/'),
             onTap: () {
+            },
+          ),
+          const ListTile(
+            title: Text('账号', style: TextStyle(color: Colors.blue)),
+          ),
+          ListTile(
+            leading: const Icon(Icons.swap_horiz),
+            title: const Text('切换账号'),
+            subtitle: const Text('转到登陆界面但不清除当前账号信息'),
+            onTap: () {
+              Get.toNamed('/login');
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.logout),
+            title: const Text('退出登陆'),
+            subtitle: const Text('清除当前账号信息并返回登陆界面'),
+            onTap: () {
+              Get.dialog(AlertDialog(
+                title: const Text('确认退出登陆？'),
+                content: const Text('确认退出登陆将会清除当前账号信息，是否继续？'),
+                actions: <Widget>[
+                  TextButton(
+                    child: const Text('取消'),
+                    onPressed: () {
+                      Get.back();
+                    },
+                  ),
+                  TextButton(
+                    child: const Text('确认'),
+                    onPressed: () {
+                      logout();
+                      // Get.back();
+                    },
+                  ),
+                ],
+              ));
+              // logout();
             },
           ),
           const ListTile(
@@ -120,8 +200,8 @@ class _SettingsPageState extends State<SettingsPage> {
           //   secondary: Icon(Icons.work),
           // ),
           SwitchListTile(
-            title: Text('使用新的视频详情页动态效果'),
-            subtitle: Text('旧效果做的不和我意，但保留了'),
+            title: const Text('使用新的视频详情页动态效果'),
+            subtitle: const Text('旧效果做的不和我意，但保留了'),
             value: _settings.detailPageVersion,
             onChanged: (bool value) {
               setState(() {
@@ -131,8 +211,8 @@ class _SettingsPageState extends State<SettingsPage> {
             secondary: const Icon(Icons.dynamic_feed_rounded),
           ),
           SwitchListTile(
-            title: Text('使用新的图片详情页动态效果'),
-            subtitle: Text('旧效果做的不和我意，但保留了'),
+            title: const Text('使用新的图片详情页动态效果'),
+            subtitle: const Text('旧效果做的不和我意，但保留了'),
             value: _settings.imgViewVersion,
             onChanged: (bool value) {
               setState(() {
@@ -145,8 +225,8 @@ class _SettingsPageState extends State<SettingsPage> {
             title: Text('播放器设置', style: TextStyle(color: Colors.blue)),
           ),
           SwitchListTile(
-            title: Text('自动播放'),
-            subtitle: Text('自动开始缓冲和播放视频'),
+            title: const Text('自动播放'),
+            subtitle: const Text('自动开始缓冲和播放视频'),
             value: _settings.autoPlay,
             onChanged: (bool value) {
               setState(() {
@@ -156,8 +236,8 @@ class _SettingsPageState extends State<SettingsPage> {
             secondary: Icon(Icons.play_arrow),
           ),
           SwitchListTile(
-            title: Text('循环播放'),
-            subtitle: Text('播放结束后自动重新开始播放'),
+            title: const Text('循环播放'),
+            subtitle: const Text('播放结束后自动重新开始播放'),
             value: _settings.loopPlay,
             onChanged: (bool value) {
               setState(() {
