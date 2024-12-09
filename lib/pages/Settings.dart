@@ -4,6 +4,7 @@ import 'package:qwara/constant.dart';
 import 'package:qwara/EventBus/EventBus.dart';
 import 'package:qwara/getX/StoreController.dart';
 import 'package:get/get.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -268,8 +269,12 @@ class _SettingsPageState extends State<SettingsPage> {
             leading: const Icon(Icons.code),
             title: const Text('源代码'),
             subtitle: const Text('GitHub'),
-            onTap: () {
+            onTap: () async {
               // 打开GitHub
+              final Uri _url = Uri.parse("https://github.com/qwertow/qwara");
+              if (!await launchUrl(_url) ){
+              throw Exception('Could not launch $_url');
+              }
             },
           ),
         ],
