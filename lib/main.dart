@@ -24,8 +24,8 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await DownLoadHelper.downloaderInitialize();
   // 初始化通知帮助类
-  NotificationHelper notificationHelper = NotificationHelper();
-  await notificationHelper.initialize();
+  // NotificationHelper notificationHelper = NotificationHelper();
+  // await notificationHelper.initialize();
   runApp(const MyApp());
 }
 class MyApp extends StatefulWidget {

@@ -4,10 +4,17 @@ import 'package:video_player/video_player.dart';
 
 EventBus eventBus = EventBus();
 
+enum ControllerReloadStatus {
+  start,
+  end,
+}
+
 class ControllerReloadEvent {
-  ControllerReloadEvent(this.controller);
+
+  ControllerReloadEvent(this.controller, this.status);
 
   VideoPlayerController controller;
+  ControllerReloadStatus status;
 }
 
 class UpdateAccessTokenEvent {

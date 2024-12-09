@@ -5,6 +5,8 @@ import 'package:qwara/pages/videoDetail/FullScreen.dart';
 import 'package:qwara/getX/StoreController.dart';
 import 'package:qwara/enum/Enum.dart';
 
+import 'package:qwara/EventBus/EventBus.dart';
+
 
 class ControlMask extends StatefulWidget{
   const ControlMask({
@@ -36,6 +38,7 @@ class _ControlMaskState extends State<ControlMask> with TickerProviderStateMixin
     }catch(e){
       buffered=const Duration(seconds: 0);
     }
+    setState(() {});
   }
 
   @override
@@ -45,6 +48,11 @@ class _ControlMaskState extends State<ControlMask> with TickerProviderStateMixin
     print("widthcm: ${widget.width}");
     _controller = widget.controller;
     _controller.addListener(_bufferedListener);
+    // eventBus.on<ControllerReloadEvent>().listen((event){
+    //   setState(() {
+    //     _controller = event.controller;
+    //   });
+    // });
   }
   void _rewind() {
     if(!_controller.value.isInitialized || _controller.value.position <= const Duration(seconds: 10)){

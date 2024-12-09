@@ -21,6 +21,7 @@ class FullScreen extends StatefulWidget {
   State<FullScreen> createState() => _FullScreenState();
 }
 class _FullScreenState extends State<FullScreen> {
+  late ControllerReloadStatus _controllerStatus = ControllerReloadStatus.end;
   late VideoPlayerController _controller;
   int _dragProgress = 0; // 进度值
   int _totalTime = 0; // 总时间
@@ -73,10 +74,14 @@ class _FullScreenState extends State<FullScreen> {
     _controller.addListener(listener);
     eventBus.on<ControllerReloadEvent>().listen((event){
       setState(() {
-        _controller = event.controller;
+        _controllerStatus = event.status;
+        if(event.status==ControllerReloadStatus.end){
+            _controller = event.controller;
+        }
       });
     });
   }
+
   bool showOverlay = false; // 控制遮罩层的显隐
 
   void _toggleOverlay() {
@@ -113,7 +118,7 @@ class _FullScreenState extends State<FullScreen> {
       backgroundColor: Colors.black,
       body: Hero(
         tag: "player",
-        child: Stack(
+        child: _controllerStatus==ControllerReloadStatus.end? Stack(
           alignment: Alignment.center,
           children: [
 
@@ -181,41 +186,51 @@ class _FullScreenState extends State<FullScreen> {
               ),// 不显示遮罩层时返回空容器,
             ),
             if(_showArrowLeft || _showArrowRight)
-            Positioned(
-              top: 100,
-              child: Container(
-                width: 500,
-                height: 200,
-                color: Colors.black54,
-                child: Column(
-                  children: [
-                    if(_showArrowLeft)
-                    const Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.arrow_left, size: 100, color: Colors.white),
-                        Icon(Icons.arrow_left, size: 100, color: Colors.white)
-                      ],
-                    ),
-                    if(_showArrowRight)
-                    const Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.arrow_right, size: 100, color: Colors.white),
-                        Icon(Icons.arrow_right, size: 100, color: Colors.white)
-                      ],
-                    ),
-                    Text(
-                      "${formatDuration(_dragProgress)}/${formatDuration(_totalTime)}",
-                      style: TextStyle(color: Colors.white, fontSize: 20.sp),
-                    )
-                  ],
+              Positioned(
+                top: 100,
+                child: Container(
+                  width: 500,
+                  height: 200,
+                  color: Colors.black54,
+                  child: Column(
+                    children: [
+                      if(_showArrowLeft)
+                        const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.arrow_left, size: 100, color: Colors.white),
+                            Icon(Icons.arrow_left, size: 100, color: Colors.white)
+                          ],
+                        ),
+                      if(_showArrowRight)
+                        const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.arrow_right, size: 100, color: Colors.white),
+                            Icon(Icons.arrow_right, size: 100, color: Colors.white)
+                          ],
+                        ),
+                      Text(
+                        "${formatDuration(_dragProgress)}/${formatDuration(_totalTime)}",
+                        style: TextStyle(color: Colors.white, fontSize: 20.sp),
+                      )
+                    ],
+                  ),
                 ),
-              ),
-            )
+              )
           ],
-        ),
+        ):_buildLoadingIndicator(),
       ),
+    );
+  }
+
+  Widget _buildLoadingIndicator() {
+    return const Center(
+        child: CircularProgressIndicator(
+          strokeWidth: 4.0,
+          backgroundColor: Colors.blue,
+          valueColor: AlwaysStoppedAnimation<Color>(Colors.red),
+        ),
     );
   }
 }

@@ -15,7 +15,7 @@ class DownLoadHelper {
   static Future<void>  downloaderInitialize()async {
     print("初始化下载器");
     await FlutterDownloader.initialize(
-        debug: true, // optional: set to false to disable printing logs to console (default: true)
+        debug: false, // optional: set to false to disable printing logs to console (default: true)
         ignoreSsl: true // option: set to false to disable working with http links (default: false)
     );
     IsolateNameServer.removePortNameMapping('downloader_send_port');

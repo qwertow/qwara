@@ -103,69 +103,66 @@ class _DownloadPageState extends State<DownloadPage> {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
             ),
-            color: Colors.grey[200],
-            child: ListTile(
-              onTap: () async {
-                // _loadVideo('${video.localVPath}.mp4');
-                // Navigator.of(context)
-                //     .push(MaterialPageRoute(builder: (context) {
-                //   return FullScreen(controller: _controller,onBack: (){
-                //     // print('onBack');
-                //     _controller.dispose();
-                //   },FpClarity: [getClarity(video.localVPath.split('_')[-2])],);
-                // }));
-
-                if (isVideoFile('${task.savedDir}/${task.filename}')) {
-                  _loadVideo('${task.savedDir}/${task.filename}');
-                  Navigator.of(context)
-                      .push(MaterialPageRoute(builder: (context) {
-                    return FullScreen(controller: _controller,onBack: (){
-                      // print('onBack');
-                      _controller.dispose();
-                    },FpClarity: [getClarity(task.filename!.split('_').reversed.toList()[1])],);
-                  }));
-                } else {
-                  Navigator.of(context).push(MaterialPageRoute(
-                    builder: (context) => ShowImagePage(imagePath: '${task.savedDir}/${task.filename}'),
-                  ));
-                }
-              },
-              leading: SizedBox(
-                width: 100,
-                child: buildMediaWidget("${task.savedDir}/${task.filename}"),
-              ),
-              title: Text(
-                task.filename ?? "unknown",
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
-              subtitle: Text(formatMilliseconds(task.timeCreated)),
-              trailing: IconButton(
-                icon: const Icon(Icons.delete),
-                onPressed: () {
-                  Get.dialog(AlertDialog(
-                    title: const Text('确认删除'),
-                    content: Text('确认删除${task.filename}?'),
-                    actions: [
-                      TextButton(
-                        child: const Text('取消'),
-                        onPressed: () {
-                          Get.back();
-                        },
-                      ),
-                      TextButton(
-                        child: const Text('确认'),
-                        onPressed: () async {
-                          await storeController.removeDownloadTask("${task.savedDir}/${task.filename}",task.taskId);
-                          setState(() {
-                            _getDV();
-                          });
-                          Get.back();
-                        },
-                      ),
-                    ],
-                  ));
-                },
-            ),)
+            // color: Colors.grey[200],
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ListTile(
+                  onTap: () async {
+                    if (isVideoFile('${task.savedDir}/${task.filename}')) {
+                      _loadVideo('${task.savedDir}/${task.filename}');
+                      Navigator.of(context)
+                          .push(MaterialPageRoute(builder: (context) {
+                        return FullScreen(controller: _controller,onBack: (){
+                          // print('onBack');
+                          _controller.dispose();
+                        },FpClarity: [getClarity(task.filename!.split('_').reversed.toList()[1])],);
+                      }));
+                    } else {
+                      Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) => ShowImagePage(imagePath: '${task.savedDir}/${task.filename}'),
+                      ));
+                    }
+                  },
+                  leading: SizedBox(
+                    width: 100,
+                    child: buildMediaWidget("${task.savedDir}/${task.filename}"),
+                  ),
+                  title: Text(
+                    task.filename ?? "unknown",
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: Text(formatMilliseconds(task.timeCreated)),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.delete),
+                    onPressed: () {
+                      Get.dialog(AlertDialog(
+                        title: const Text('确认删除'),
+                        content: Text('确认删除${task.filename}?'),
+                        actions: [
+                          TextButton(
+                            child: const Text('取消'),
+                            onPressed: () {
+                              Get.back();
+                            },
+                          ),
+                          TextButton(
+                            child: const Text('确认'),
+                            onPressed: () async {
+                              await storeController.removeDownloadTask("${task.savedDir}/${task.filename}",task.taskId);
+                              setState(() {
+                                _getDV();
+                              });
+                              Get.back();
+                            },
+                          ),
+                        ],
+                      ));
+                    },
+                  ),),
+                Text('  ${task.savedDir}/${task.filename}'),
+              ],
+            )
           );
         },
       ),

@@ -64,6 +64,9 @@ class StoreController extends GetxController {
     _historyVideos.clear();
     await box.write('HISTORY_VIDEOS', tempHistoryVideos.map((e) => e.toJson()).toList());
   }
+  Future<void> clearHistoryVideos() async {
+    await box.write('HISTORY_VIDEOS', []);
+  }
 
 
   List<MyDownloadTask> get downloads => (box.read('DOWNLOADS') ?? []).map((e) => MyDownloadTask.fromJson(e)).cast<MyDownloadTask>().toList();

@@ -129,7 +129,6 @@ class VideoViewState extends State<VideoView>  with LifecycleAware, LifecycleMix
   }
 //初始化控制器
   void _initController(String link , {bool initializePlay = false}) {
-
     _controller = VideoPlayerController.networkUrl(Uri.parse(link))
       ..initialize().then((_) {
         if(initializePlay){
@@ -141,7 +140,7 @@ class VideoViewState extends State<VideoView>  with LifecycleAware, LifecycleMix
           if(oldIsPlaying){
             _controller.play();
           }
-          eventBus.fire(ControllerReloadEvent(_controller));
+          eventBus.fire(ControllerReloadEvent(_controller,ControllerReloadStatus.end));
         }
         setState(() {});
       })..setLooping(loopPlay)..addListener(() {
@@ -166,13 +165,8 @@ class VideoViewState extends State<VideoView>  with LifecycleAware, LifecycleMix
               proportion=total.inSeconds==0?0:dura.inSeconds/total.inSeconds;
               print("proportion: $proportion");
             });
-            // print("resetTimer: ${_controller.value.isBuffering}",);
-            //   _controller.value.isPlaying
           }
       );
-    // print("initControllerOD: $oldDura");
-
-
   }
 
   //加载视频
@@ -186,6 +180,8 @@ class VideoViewState extends State<VideoView>  with LifecycleAware, LifecycleMix
     }catch(e){
 
     }
+    eventBus.fire(ControllerReloadEvent(_controller,ControllerReloadStatus.start));
+
     if (!_controller.value.isInitialized) {
       //没有视频在播放
       _initController(url, initializePlay: initializePlay);
