@@ -72,7 +72,7 @@ class StoreController extends GetxController {
   List<MyDownloadTask> get downloads => (box.read('DOWNLOADS') ?? []).map((e) => MyDownloadTask.fromJson(e)).cast<MyDownloadTask>().toList();
   Future<void> setDownloads() async {
     List<MyDownloadTask> tempDownloads = List.from(downloads);
-    List<DownloadTask>? nowDownloads = await FlutterDownloader.loadTasksWithRawQuery(query: "SELECT * FROM task WHERE status = 3");
+    List<DownloadTask>? nowDownloads = await FlutterDownloader.loadTasksWithRawQuery(query: "SELECT * FROM task WHERE status = 3 OR status = 4");
     FlutterDownloader.loadTasksWithRawQuery(query: "DELETE FROM task WHERE status = 3");
     tempDownloads.addAll((nowDownloads ?? []).map((e) => MyDownloadTask.fromDownloadTask(e)).toList());
     if(settings.maxDownloadRecords!=null){

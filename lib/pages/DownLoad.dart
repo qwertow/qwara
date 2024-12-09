@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import 'package:qwara/getX/StoreController.dart';
 import 'package:qwara/pages/videoDetail/FullScreen.dart';
+import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:qwara/utils/TimeUtil.dart';
 import 'package:video_player/video_player.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
@@ -133,7 +134,7 @@ class _DownloadPageState extends State<DownloadPage> {
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                   subtitle: Text(formatMilliseconds(task.timeCreated)),
-                  trailing: IconButton(
+                  trailing: task.status.index==3?IconButton(
                     icon: const Icon(Icons.delete),
                     onPressed: () {
                       Get.dialog(AlertDialog(
@@ -159,7 +160,18 @@ class _DownloadPageState extends State<DownloadPage> {
                         ],
                       ));
                     },
-                  ),),
+                  )
+                      : IconButton(
+                    icon: const Icon(Icons.refresh),
+                    onPressed: () async {
+                      FlutterDownloader.retry(taskId: task.taskId);
+                      await storeController.removeDownloadTask("${task.savedDir}/${task.filename}",task.taskId);
+                      setState(() {
+                        _getDV();
+                      });
+                    },
+                  )
+                ),
                 Text('  ${task.savedDir}/${task.filename}'),
               ],
             )

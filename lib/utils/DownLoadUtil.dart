@@ -8,6 +8,7 @@ import 'package:get/get.dart' hide Response;
 import 'package:qwara/getX/StoreController.dart';
 import 'package:qwara/utils/DirectoryManager.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class DownLoadHelper {
    static final ReceivePort _port = ReceivePort();
@@ -25,7 +26,8 @@ class DownLoadHelper {
       DownloadTaskStatus status =  DownloadTaskStatus.values[data[1]];
       int progress = data[2];
       // print("下载进度00: $id, $status, $progress");
-      if (status == DownloadTaskStatus.complete) {
+      if (status == DownloadTaskStatus.complete || status == DownloadTaskStatus.failed) {
+        _downCallback(status == DownloadTaskStatus.complete);
         // 下载完成后的处理逻辑
         final tasks = await FlutterDownloader.loadTasksWithRawQuery(query: "SELECT * FROM task WHERE task_id='$id'");
         print("下载完成: $id");
@@ -55,7 +57,7 @@ class DownLoadHelper {
 
    // DownloadWorker   649
   Future<String?> createDownloadTak(String saveTo,String link, String title, {String? suffix}) async {
-
+    _beforeDownload();
     Directory savedDir = Directory(saveTo);
     if (!savedDir.existsSync()) {
       savedDir.createSync(recursive: true);
@@ -124,21 +126,21 @@ void showDownSnackBar( String message, {DownloadStatus? type}) {
   }
 }
 
-// Future<bool> beforeDownload(String id) async {
-//
-//   if(await Permission.notification.isDenied){
-//     Get.snackbar(
-//       "权限申请",
-//       "请同意通知申请，以便应用显示下载进度'}。",
-//       snackPosition: SnackPosition.TOP,
-//       backgroundColor: Colors.red,
-//       colorText: Colors.white,
-//       snackStyle: SnackStyle.FLOATING,
-//     );
-//     Permission.notification.request();
-//   }
-//   return true;
-// }
+Future<bool> _beforeDownload() async {
+
+  if(await Permission.notification.isDenied){
+    Get.snackbar(
+      "权限申请",
+      "请同意通知申请，以便应用显示下载进度'}。",
+      snackPosition: SnackPosition.TOP,
+      backgroundColor: Colors.red,
+      colorText: Colors.white,
+      snackStyle: SnackStyle.FLOATING,
+    );
+    Permission.notification.request();
+  }
+  return true;
+}
 //
 void _downCallback(bool success) {
   if(success) {
