@@ -1,41 +1,93 @@
 
 import 'dart:io';
+import 'dart:isolate';
+import 'dart:ui';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart' hide Response;
-import 'package:qwara/utils/dioRequest.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:r_album/r_album.dart';
-import 'notificationUtils.dart';
+import 'package:qwara/getX/StoreController.dart';
+import 'package:qwara/utils/DirectoryManager.dart';
+import 'package:flutter_downloader/flutter_downloader.dart';
 
-final NotificationHelper _notificationHelper = NotificationHelper();
+class DownLoadHelper {
+   static final ReceivePort _port = ReceivePort();
+
+  static Future<void>  downloaderInitialize()async {
+    print("初始化下载器");
+    await FlutterDownloader.initialize(
+        debug: true, // optional: set to false to disable printing logs to console (default: true)
+        ignoreSsl: true // option: set to false to disable working with http links (default: false)
+    );
+    IsolateNameServer.removePortNameMapping('downloader_send_port');
+    IsolateNameServer.registerPortWithName(_port.sendPort, 'downloader_send_port');
+    _port.listen((dynamic data) async {
+      String id = data[0];
+      DownloadTaskStatus status =  DownloadTaskStatus.values[data[1]];
+      int progress = data[2];
+      // print("下载进度00: $id, $status, $progress");
+      if (status == DownloadTaskStatus.complete) {
+        // 下载完成后的处理逻辑
+        final tasks = await FlutterDownloader.loadTasksWithRawQuery(query: "SELECT * FROM task WHERE task_id='$id'");
+        print("下载完成: $id");
+        print(tasks);
+        print(tasks?[0].savedDir);
+        print(tasks?[0].filename);
+        DirectoryManager.scanFile("${tasks?[0].savedDir}/${tasks?[0].filename}");
+        storeController.setDownloads();
+
+      }
+    });
+    await FlutterDownloader.registerCallback(_downloadCallback);
+
+  }
+  @pragma('vm:entry-point')
+  static void _downloadCallback(String id, int status, int progress) {
+    // print("下载进度: $id, $status, $progress");
+    final SendPort? send = IsolateNameServer.lookupPortByName('downloader_send_port');
+    send?.send([id, status, progress]);
+  }
+
+  Future<int> _getFileSize(String url) async {
+    var request = await HttpClient().headUrl(Uri.parse(url));
+    var response = await request.close();
+    return int.parse(response.headers['content-length']?.first ?? '0');
+  }
+
+   // DownloadWorker   649
+  Future<String?> createDownloadTak(String saveTo,String link, String title, {String? suffix}) async {
+
+    Directory savedDir = Directory(saveTo);
+    if (!savedDir.existsSync()) {
+      savedDir.createSync(recursive: true);
+    }
+
+    print("开始下载：${await _getFileSize(link)}");
+    Fluttertoast.showToast(msg: "开始下载");
+
+    String _fileName = title;
+    _fileName += suffix ?? "";
+
+    final taskId = await FlutterDownloader.enqueue(
+      fileName: _fileName,
+      url: link,
+      headers: {}, // optional: header send with url (auth token etc)
+      savedDir: savedDir.path,
+      showNotification: true, // show download progress in status bar (for Android)
+      openFileFromNotification: true, // click on notification to open downloaded file (for Android)
+    );
+    // _downloadingMap[_fileName] = taskId;
+    return taskId;
+  }
+}
+
+final DownLoadHelper downLoadHelper = DownLoadHelper();
+
 
 enum DownloadStatus {
   waiting,
   downloading,
   success,
   error,
-}
-
-Future<void> moveToAlbum(String title, {String? suffix}) async {
-  String _fileName = title;
-  _fileName += suffix ?? "";
-  String originalFilePath = "${await getPhoneLocalPath()}$_fileName";
-
-  bool? createAlbum = await RAlbum.createAlbum("qwara");
-  if(createAlbum ?? false) {
-    await RAlbum.saveAlbum(
-        "qwara", [originalFilePath],[_fileName]);
-    // 删除原始文件
-    File originalFile = File(originalFilePath);
-    if (await originalFile.exists()) {
-      await originalFile.delete();
-      print("原始文件已删除：$originalFilePath");
-    } else {
-      print("文件不存在：$originalFilePath");
-    }
-  }
 }
 
 void showDownSnackBar( String message, {DownloadStatus? type}) {
@@ -72,64 +124,27 @@ void showDownSnackBar( String message, {DownloadStatus? type}) {
   }
 }
 
-int _idCounter = 0;
-Map<String,int> _downloadingMap = {"0":0};
-Future<bool> downloading(String url ,String title, {String? suffix}) async {
-  Fluttertoast.showToast(msg: "开始下载");
-
-  String _fileName = title;
-  _fileName += suffix ?? "";
-  _downloadingMap[_fileName] = _idCounter++;
-  return downLoadFile(url,
-      savePath: await getPhoneLocalPath(),
-      fileName: _fileName,
-      receiveProgress: (received, total) {
-        if (total != -1) {
-          ///当前下载的百分比例
-          // print((received / total * 100).toStringAsFixed(0) + "%");
-          // CircularProgressIndicator(value: currentProgress,) 进度 0-1
-          _notificationHelper.showNotification(
-            id: _downloadingMap[_fileName]!,
-            title: _fileName,
-            body: "${(received/1000000).toStringAsFixed(2)}M/${(total/1000000).toStringAsFixed(2)}M",
-            details: AndroidNotificationDetails(
-              _fileName,
-              "DownloadNotification",
-              progress: received,
-              maxProgress: total,
-              showProgress: true,
-              enableVibration: false,
-              vibrationPattern: null,
-              playSound: false,
-              importance: Importance.low,
-              priority: Priority.low,
-            ),
-          );
-        }
-      }
-  );
-}
-
-Future<bool> beforeDownload(String id) async {
-
-  if(await Permission.notification.isDenied){
-    Get.snackbar(
-      "权限申请",
-      "请同意通知申请，以便应用显示下载进度'}。",
-      snackPosition: SnackPosition.TOP,
-      backgroundColor: Colors.red,
-      colorText: Colors.white,
-      snackStyle: SnackStyle.FLOATING,
-    );
-    Permission.notification.request();
-  }
-  return true;
-}
-
-void downCallback(bool success) {
+// Future<bool> beforeDownload(String id) async {
+//
+//   if(await Permission.notification.isDenied){
+//     Get.snackbar(
+//       "权限申请",
+//       "请同意通知申请，以便应用显示下载进度'}。",
+//       snackPosition: SnackPosition.TOP,
+//       backgroundColor: Colors.red,
+//       colorText: Colors.white,
+//       snackStyle: SnackStyle.FLOATING,
+//     );
+//     Permission.notification.request();
+//   }
+//   return true;
+// }
+//
+void _downCallback(bool success) {
   if(success) {
     showDownSnackBar( "下载完成", type: DownloadStatus.success);
   }else {
     showDownSnackBar( "下载失败", type: DownloadStatus.error);
   }
 }
+

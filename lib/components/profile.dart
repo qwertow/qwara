@@ -1,13 +1,12 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-// import 'package:intl/intl.dart';
 import 'package:qwara/api/img/img.dart';
 import 'package:qwara/api/video/video.dart';
 import 'package:qwara/components/image/ImgList.dart';
 import 'package:qwara/components/SlidingPanel3Controller.dart';
 import 'package:qwara/enum/Enum.dart';
-import 'package:qwara/getX/StoreController.dart';
+import 'package:qwara/utils/DirectoryManager.dart';
 import 'package:qwara/utils/DownLoadUtil.dart';
 import 'package:qwara/utils/dioRequest.dart';
 import 'package:skeletonizer/skeletonizer.dart';
@@ -133,28 +132,18 @@ class _ProfileState extends State<Profile> with AutomaticKeepAliveClientMixin{
               children: [
                 const Text("保存到"),
                 OutlinedButton(onPressed: () async {
-                  if(!await beforeDownload(widget.info['id'])){
-                    return;
-                  }
-                  String path = await getPhoneLocalPath();
+                  downLoadHelper.createDownloadTak(
+                      await getPhoneLocalPath(),
+                      getVideoDownloadUrl(clarity),
+                      fileTitle,suffix: ".mp4");
                   Get.back();
-                  downloadSuccess = await downloading(getVideoDownloadUrl(clarity),fileTitle,suffix: ".mp4");
-                  if(downloadSuccess) {
-                    await storeController.setDownloadVideos(DownloadVideo(widget.info, "$path$fileTitle", DateTime.now()));
-                    // storeController.removeDownloadVideo(widget.info['id']);
-                  }
-                  downCallback(downloadSuccess);
                 }, child: const Text("下载文件夹")),
                 OutlinedButton(onPressed: () async {
-                  if(!await beforeDownload(widget.info['id'])){
-                    return;
-                  }
+                  downLoadHelper.createDownloadTak(
+                      await DirectoryManager.getMoviesDirectory(),
+                      getVideoDownloadUrl(clarity),
+                      fileTitle,suffix: ".mp4");
                   Get.back();
-                  downloadSuccess = await downloading(getVideoDownloadUrl(clarity),fileTitle,suffix: ".mp4");;
-                  if(downloadSuccess) {
-                    moveToAlbum(fileTitle,suffix: ".mp4");
-                  }
-                  downCallback(downloadSuccess);
                 }, child: const Text("相册")),
                 OutlinedButton(onPressed: () async {
                   Get.back();

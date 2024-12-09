@@ -233,7 +233,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 _settings.autoPlay = value;
               });
             },
-            secondary: Icon(Icons.play_arrow),
+            secondary: const Icon(Icons.play_arrow),
           ),
           SwitchListTile(
             title: const Text('循环播放'),
@@ -244,7 +244,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 _settings.loopPlay = value;
               });
             },
-            secondary: Icon(Icons.loop),
+            secondary: const Icon(Icons.loop),
           ),
           const ListTile(
             title: Text('关于', style: TextStyle(color: Colors.blue)),

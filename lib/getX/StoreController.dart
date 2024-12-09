@@ -4,13 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:qwara/constant.dart';
-
+import 'package:flutter_downloader/flutter_downloader.dart';
 import '../enum/Enum.dart';
 
 final box = GetStorage();
 
 final List<HistoryVideo> _historyVideos = [];
-// final List<DownloadVideo> _downloadVideos = <DownloadVideo>[];
 
 class StoreController extends GetxController {
   Settings settings=Settings();
@@ -50,8 +49,6 @@ class StoreController extends GetxController {
     if(_historyVideos.isEmpty){
       return;
     }
-    // print(historyVideos);
-    // print(_historyVideos);
     List<HistoryVideo> tempHistoryVideos = List.from(historyVideos);
     if(tempHistoryVideos.isNotEmpty){
       if(tempHistoryVideos.last.historyVInfo?["id"]==_historyVideos.first.historyVInfo?["id"]){
@@ -68,19 +65,21 @@ class StoreController extends GetxController {
     await box.write('HISTORY_VIDEOS', tempHistoryVideos.map((e) => e.toJson()).toList());
   }
 
-  // List<DownloadVideo> get downloadVideos => box.read('DOWNLOAD_VIDEOS') ?? <DownloadVideo>[];
-  List<DownloadVideo> get downloadVideos => (box.read('DOWNLOAD_VIDEOS') ?? []).map((e) => DownloadVideo.fromJson(e)).cast<DownloadVideo>().toList() ;
-  Future<void> setDownloadVideos(DownloadVideo value) async {
-    List<DownloadVideo> tempDownloadVideos = List.from(downloadVideos);
-    tempDownloadVideos.add(value);
+
+  List<MyDownloadTask> get downloads => (box.read('DOWNLOADS') ?? []).map((e) => MyDownloadTask.fromJson(e)).cast<MyDownloadTask>().toList();
+  Future<void> setDownloads() async {
+    List<MyDownloadTask> tempDownloads = List.from(downloads);
+    List<DownloadTask>? nowDownloads = await FlutterDownloader.loadTasksWithRawQuery(query: "SELECT * FROM task WHERE status = 3");
+    FlutterDownloader.loadTasksWithRawQuery(query: "DELETE FROM task WHERE status = 3");
+    tempDownloads.addAll((nowDownloads ?? []).map((e) => MyDownloadTask.fromDownloadTask(e)).toList());
     if(settings.maxDownloadRecords!=null){
-      if(tempDownloadVideos.length>settings.maxDownloadRecords!){
-        tempDownloadVideos.removeRange(0, tempDownloadVideos.length-settings.maxDownloadRecords!);
+      if(tempDownloads.length>settings.maxDownloadRecords!){
+        tempDownloads.removeRange(0, tempDownloads.length-settings.maxDownloadRecords!);
       }
     }
-    await box.write('DOWNLOAD_VIDEOS', tempDownloadVideos.map((e) => e.toJson()).toList());
+    await box.write('DOWNLOADS', tempDownloads.map((e) => e.toJson()).toList());
   }
-  Future<void> removeDownloadVideo(String path) async {
+  Future<void> removeDownloadTask(String path,String taskId) async {
     // 尝试删除文件
     try {
       final file = File('$path.mp4');
@@ -93,9 +92,9 @@ class StoreController extends GetxController {
     } catch (e) {
       print("删除文件时出错: $e");
     }
-    List<DownloadVideo> tempDownloadVideos = List.from(downloadVideos);
-    tempDownloadVideos.removeWhere((element) => element.localVPath == path);
-    await box.write('DOWNLOAD_VIDEOS', tempDownloadVideos.map((e) => e.toJson()).toList());
+    List<MyDownloadTask> tempDownloads = List.from(downloads);
+    tempDownloads.removeWhere((element) => element.taskId == taskId);
+    await box.write('DOWNLOADS', tempDownloads.map((e) => e.toJson()).toList());
   }
 }
 
@@ -186,21 +185,64 @@ class HistoryVideo{
   };
 }
 
-class DownloadVideo{
-  Map<String, dynamic> downloadVInfo;
-  String localVPath;
-  DateTime downloadTime;
-  DownloadVideo(this.downloadVInfo, this.localVPath, this.downloadTime);
+class MyDownloadTask extends DownloadTask {
+  MyDownloadTask({required super.taskId, required super.status, required super.progress, required super.url, required super.filename, required super.savedDir, required super.timeCreated, required super.allowCellular});
 
-  factory DownloadVideo.fromJson(Map<String, dynamic> json) {
-    return DownloadVideo(json['downloadVInfo'], json['localVPath'], DateTime.parse(json['downloadTime']));
+  factory MyDownloadTask.fromJson(Map<String, dynamic> json) {
+    return MyDownloadTask(
+      taskId: json['taskId'],
+      status: DownloadTaskStatus.fromInt(json['status']),
+      progress: json['progress'],
+      url: json['url'],
+      filename: json['filename'],
+      savedDir: json['savedDir'],
+      timeCreated: json['timeCreated'],
+      allowCellular: json['allowCellular'],
+    );
+  }
+
+  factory MyDownloadTask.fromDownloadTask(DownloadTask task) {
+    return MyDownloadTask(
+      taskId: task.taskId,
+      status: task.status,
+      progress: task.progress,
+      url: task.url,
+      filename: task.filename,
+      savedDir: task.savedDir,
+      timeCreated: task.timeCreated,
+      allowCellular: task.allowCellular,
+    );
   }
 
   Map<String, dynamic> toJson() => {
-    'downloadVInfo': downloadVInfo,
-    'localVPath': localVPath,
-    'downloadTime': downloadTime.toIso8601String(),
+    'taskId': taskId,
+   'status': statusAsInt,
+    'progress': progress,
+    'url': url,
+    'filename': filename,
+   'savedDir': savedDir,
+    'timeCreated': timeCreated,
+    'allowCellular': allowCellular,
   };
+  // 将状态转换为整数值
+  int get statusAsInt {
+    switch (status) {
+      case DownloadTaskStatus.undefined:
+        return 0;
+      case DownloadTaskStatus.enqueued:
+        return 1;
+      case DownloadTaskStatus.running:
+        return 2;
+      case DownloadTaskStatus.complete:
+        return 3;
+      case DownloadTaskStatus.failed:
+        return 4;
+      case DownloadTaskStatus.canceled:
+        return 5;
+      case DownloadTaskStatus.paused:
+        return 6;
+    }
+  }
 }
 
 final storeController = Get.find<StoreController>();

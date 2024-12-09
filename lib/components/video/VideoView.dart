@@ -72,7 +72,7 @@ class VideoViewState extends State<VideoView>  with LifecycleAware, LifecycleMix
   void onLifecycleEvent(LifecycleEvent event) {
     print("onLifecycleEvent: $event");
     // final currentRouteName = ModalRoute.of(context)?.settings.name;
-    if (event == LifecycleEvent.inactive) {
+    if (event == LifecycleEvent.invisible) {
       wasLifePlaying = isPlaying;
       if(wasLifePlaying){
         _controller.pause();

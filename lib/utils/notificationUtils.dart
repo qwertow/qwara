@@ -35,7 +35,7 @@ class NotificationHelper {
         required String body,
         required AndroidNotificationDetails details,
       }) async {
-
+    // print(body);
     // 安卓的通知
     // 'your channel id'：用于指定通知通道的ID。
     // 'your channel name'：用于指定通知通道的名称。
@@ -57,7 +57,6 @@ class NotificationHelper {
     NotificationDetails platformChannelSpecifics =
     NotificationDetails(android: androidNotificationDetails,iOS: iosNotificationDetails);
 
-    // 发起一个通知
     await _notificationsPlugin.show(
       id,
       title,
@@ -66,3 +65,4 @@ class NotificationHelper {
     );
   }
 }
+final NotificationHelper notificationHelper = NotificationHelper();

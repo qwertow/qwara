@@ -11,6 +11,7 @@ import 'package:qwara/pages/videosPage//VideosPage.dart';
 import 'package:qwara/routers/routers.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:qwara/utils/DownLoadUtil.dart';
 import 'package:qwara/utils/notificationUtils.dart';
 import 'package:responsive_builder/responsive_builder.dart';
 import 'package:sizer/sizer.dart';
@@ -21,7 +22,7 @@ import 'EventBus/EventBus.dart';
 void main() async {
   await GetStorage.init();
   WidgetsFlutterBinding.ensureInitialized();
-
+  await DownLoadHelper.downloaderInitialize();
   // 初始化通知帮助类
   NotificationHelper notificationHelper = NotificationHelper();
   await notificationHelper.initialize();
@@ -34,13 +35,15 @@ class MyApp extends StatefulWidget {
   State<MyApp> createState() => _MyAppState();
 }
 
-class _MyAppState extends State<MyApp> {
+class _MyAppState extends State<MyApp> with WidgetsBindingObserver{
   // 初始化主题模式
   ThemeMode _themeMode = ThemeMode.system;
 
   @override
   void initState() {
     super.initState();
+    // 添加观察者
+    WidgetsBinding.instance.addObserver(this);
     // 监听主题切换事件
     eventBus.on<ThemeChangeEvent>().listen((event) {
       if(event.themeMode!= null){
@@ -51,6 +54,33 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused) {
+      // 应用进入后台时执行的逻辑
+      print("应用已进入后台");
+      // 在这里执行你需要做的事情，例如保存数据或清理资源
+      storeController.setHistoryVideos();
+    }
+    if (state == AppLifecycleState.inactive) {
+      print("应用处于空闲状态");
+    }
+    if (state == AppLifecycleState.hidden) {
+      print("应用已被覆盖在后台");
+    }
+    if (state == AppLifecycleState.detached) {
+      // 应用完全关闭时执行的逻辑
+      print("应用即将关闭");
+      // 在这里执行你需要做的事情，例如保存最后的状态
+    }
+  }
+
+  @override
+  void dispose() {
+    // 移除观察者
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
   @override
   Widget build(BuildContext context) {
     return Sizer(
@@ -73,6 +103,7 @@ class _MyAppState extends State<MyApp> {
         }
     );
   }
+
 }
 
 class MyHomePage extends StatefulWidget {

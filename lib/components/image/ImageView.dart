@@ -1,3 +1,4 @@
+import 'package:qwara/utils/DirectoryManager.dart';
 import 'package:sizer/sizer.dart';
 import 'dart:async';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -237,16 +238,10 @@ class ImageViewState extends State<ImageView>{
                             right: 10,
                             child: IconButton(
                               onPressed: () async {
-                                bool isDownload = false;
-                                if(!await beforeDownload(img.id)){
-                                  return;
-                                }
-                                isDownload =await downloading("$originPrefix${img.id}/${img.name}", fileNameWithTimestamp);
-                                if(isDownload) {
-                                  await moveToAlbum(fileNameWithTimestamp);
-                                }
-                                downCallback(isDownload);
-
+                                downLoadHelper.createDownloadTak(
+                                    await DirectoryManager.getPictureDirectory(),
+                                    "$originPrefix${img.id}/${img.name}",
+                                    fileNameWithTimestamp);
                               },
                               icon: const Icon(
                                 Icons.download,
@@ -343,10 +338,15 @@ class ImageViewState extends State<ImageView>{
                             right: 10,
                             child: IconButton(
                               onPressed: () async {
-                                await beforeDownload(img.id);
-                                if(await downloading("$originPrefix${img.id}/${img.name}", fileNameWithTimestamp)) {
-                                  moveToAlbum(fileNameWithTimestamp);
-                                }
+                                // await beforeDownload(img.id);
+                                // if(await downloading("$originPrefix${img.id}/${img.name}", fileNameWithTimestamp)) {
+                                //   moveToAlbum(fileNameWithTimestamp);
+                                // }
+                                downLoadHelper.createDownloadTak(
+                                    await DirectoryManager.getPictureDirectory(),
+                                    "$originPrefix${img.id}/${img.name}",
+                                    fileNameWithTimestamp);
+
                               },
                               icon: const Icon(
                                 Icons.download,

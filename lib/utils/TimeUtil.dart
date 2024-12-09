@@ -16,3 +16,11 @@ String formatDate(String dateString) {
   DateTime dateTime = DateTime.parse(dateString); // 将日期字符串解析为 DateTime 对象
   return DateFormat('yyyy-MM-dd HH:mm:ss').format(dateTime); // 格式化日期
 }
+
+String formatMilliseconds(int milliseconds) {
+  // 将毫秒值转换为 DateTime 对象
+  DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(milliseconds);
+
+  // 使用 DateFormat 格式化为指定格式
+  return DateFormat('yyyy-MM-dd HH:mm:ss').format(dateTime);
+}

@@ -4,13 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:qwara/getX/StoreController.dart';
 import 'package:qwara/pages/videoDetail/FullScreen.dart';
 import 'package:qwara/utils/TimeUtil.dart';
-import 'package:fluttertoast/fluttertoast.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:video_player/video_player.dart';
-
+import 'package:video_thumbnail/video_thumbnail.dart';
 import '../enum/Enum.dart';
-import '../utils/LogUtil.dart';
-
 class DownloadPage extends StatefulWidget {
   const DownloadPage({super.key});
 
@@ -21,7 +17,7 @@ class DownloadPage extends StatefulWidget {
 class _DownloadPageState extends State<DownloadPage> {
   late VideoPlayerController _controller;
 
-  final List<DownloadVideo> videoData = [];
+  final List<MyDownloadTask> taskData = [];
   @override
   void initState() {
     super.initState();
@@ -31,8 +27,9 @@ class _DownloadPageState extends State<DownloadPage> {
     // print(videoData.map((e) => e.toJson()));
   }
   _getDV(){
-    videoData.clear();
-    videoData.addAll(storeController.downloadVideos.reversed);
+    taskData.clear();
+    taskData.addAll(storeController.downloads.reversed);
+    print(taskData.map((e) => e.toJson()));
   }
   Clarity getClarity(String clarity) {
     switch (clarity) {
@@ -76,24 +73,6 @@ class _DownloadPageState extends State<DownloadPage> {
     }
     return;
   }
-  String getThumbnailUrl(Map<String, dynamic> itm) {
-    var customThumbnail ;
-    var id ;
-    var name ;
-    String thumbnailUrl = "";
-    try {
-      customThumbnail = itm["customThumbnail"];
-      // print(customThumbnail.toString());
-      id = customThumbnail != null ? customThumbnail["id"] : itm["file"]["id"];
-      name = customThumbnail != null ? customThumbnail["name"] : "thumbnail-${itm['thumbnail'].toString().padLeft(2, '0')}.jpg";
-      thumbnailUrl = "https://i.iwara.tv/image/thumbnail/$id/$name";
-
-    }catch(e){
-      print(e);
-    }
-    return thumbnailUrl;
-
-  }
 
   @override
   void dispose() {
@@ -106,19 +85,19 @@ class _DownloadPageState extends State<DownloadPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('下载'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.help_outline_rounded),
-            onPressed: () {
-              Fluttertoast.showToast(msg: '只记录下载文件夹');
-            },
-          ),
-        ],
+        // actions: [
+          // IconButton(
+          //   icon: const Icon(Icons.help_outline_rounded),
+          //   onPressed: () {
+          //     Fluttertoast.showToast(msg: '只记录下载文件夹');
+          //   },
+          // ),
+        // ],
       ),
       body: ListView.builder(
-        itemCount: videoData.length,
+        itemCount: taskData.length,
         itemBuilder: (context, index) {
-          var video = videoData[index];
+          var task = taskData[index];
           return Card(
             margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
             shape: RoundedRectangleBorder(
@@ -126,37 +105,46 @@ class _DownloadPageState extends State<DownloadPage> {
             ),
             color: Colors.grey[200],
             child: ListTile(
-              onTap: () {
-                _loadVideo('${video.localVPath}.mp4');
-                Navigator.of(context)
-                    .push(MaterialPageRoute(builder: (context) {
-                  return FullScreen(controller: _controller,onBack: (){
-                    // print('onBack');
-                    _controller.dispose();
-                  },FpClarity: [getClarity(video.localVPath.split('_')[-2])],);
-                }));
+              onTap: () async {
+                // _loadVideo('${video.localVPath}.mp4');
+                // Navigator.of(context)
+                //     .push(MaterialPageRoute(builder: (context) {
+                //   return FullScreen(controller: _controller,onBack: (){
+                //     // print('onBack');
+                //     _controller.dispose();
+                //   },FpClarity: [getClarity(video.localVPath.split('_')[-2])],);
+                // }));
+
+                if (isVideoFile('${task.savedDir}/${task.filename}')) {
+                  _loadVideo('${task.savedDir}/${task.filename}');
+                  Navigator.of(context)
+                      .push(MaterialPageRoute(builder: (context) {
+                    return FullScreen(controller: _controller,onBack: (){
+                      // print('onBack');
+                      _controller.dispose();
+                    },FpClarity: [getClarity(task.filename!.split('_').reversed.toList()[1])],);
+                  }));
+                } else {
+                  Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => ShowImagePage(imagePath: '${task.savedDir}/${task.filename}'),
+                  ));
+                }
               },
-              leading: CachedNetworkImage(
-                imageUrl: getThumbnailUrl(video.downloadVInfo),
-                fit: BoxFit.fitWidth, // 使宽度填满，并保持高度按比例缩放
-                progressIndicatorBuilder: (context, url, downloadProgress) => Center(
-                  child: CircularProgressIndicator(
-                    value: downloadProgress.progress,
-                  ),
-                ),
-                errorWidget: (context, url, error) => const Icon(Icons.error,color: Colors.red,size: 50,),
+              leading: SizedBox(
+                width: 100,
+                child: buildMediaWidget("${task.savedDir}/${task.filename}"),
               ),
               title: Text(
-                video.localVPath.split('/').last,
+                task.filename ?? "unknown",
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
-              subtitle: Text(formatDate(video.downloadTime.toString()) ),
+              subtitle: Text(formatMilliseconds(task.timeCreated)),
               trailing: IconButton(
                 icon: const Icon(Icons.delete),
                 onPressed: () {
                   Get.dialog(AlertDialog(
                     title: const Text('确认删除'),
-                    content: Text('确认删除${video.localVPath.split('/').last}?'),
+                    content: Text('确认删除${task.filename}?'),
                     actions: [
                       TextButton(
                         child: const Text('取消'),
@@ -167,7 +155,7 @@ class _DownloadPageState extends State<DownloadPage> {
                       TextButton(
                         child: const Text('确认'),
                         onPressed: () async {
-                          await storeController.removeDownloadVideo(video.localVPath);
+                          await storeController.removeDownloadTask("${task.savedDir}/${task.filename}",task.taskId);
                           setState(() {
                             _getDV();
                           });
@@ -181,6 +169,64 @@ class _DownloadPageState extends State<DownloadPage> {
           );
         },
       ),
+    );
+  }
+  Future<dynamic> getThumbnailData(String videoPath) async {
+    // 从视频中生成缩略图数据
+    final thumbnailData = await VideoThumbnail.thumbnailData(
+      video: videoPath,
+      imageFormat: ImageFormat.JPEG,
+      maxWidth: 1280, // 最大宽度
+      quality: 75,     // 缩略图质量
+      timeMs: 5000,   // 获取视频的第 5 秒的帧
+    );
+
+    return thumbnailData; // 返回缩略图数据
+  }
+  Widget buildMediaWidget(String filePath) {
+    // 检查文件类型（假设 filePath 是文件的路径）
+    if (isVideoFile(filePath)) {
+      // 如果是视频文件，显示缩略图
+      return FutureBuilder(
+        future: getThumbnailData(filePath),
+        builder: (context, snapshot) {
+          if (snapshot.hasData && snapshot.data != null) {
+            return Image.memory(snapshot.data);
+          } else if (snapshot.hasError) {
+            return const Icon(Icons.error, color: Colors.red, size: 50,);
+          } else {
+            return const Center(child: CircularProgressIndicator(),);
+          }
+        },
+      );
+    } else {
+      // 如果是图片文件，直接显示
+      return Image.file(
+        File(filePath),
+        errorBuilder: (context, error, stackTrace) {
+          return const Icon(Icons.error, color: Colors.red, size: 50,);
+        },
+      );
+    }
+  }
+
+// 辅助方法，用于判断文件类型
+  bool isVideoFile(String filePath) {
+    return filePath.endsWith('.mp4') || filePath.endsWith('.webm'); // 这里根据需要添加更多视频格式
+  }
+}
+class ShowImagePage extends StatelessWidget {
+  final String imagePath;
+
+  const ShowImagePage({super.key, required this.imagePath});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: Center(
+        child: Image.file(File(imagePath)),
+      ), // 根据路径加载图片
     );
   }
 }

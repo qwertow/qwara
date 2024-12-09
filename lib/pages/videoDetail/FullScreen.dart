@@ -173,7 +173,7 @@ class _FullScreenState extends State<FullScreen> {
               child: showOverlay? ControlMask(
                 switchClarity: widget.switchClarity,
                 controller: _controller,
-                fullScreen: true, cClarity: [],
+                fullScreen: true, cClarity: widget.FpClarity,
                 // width: MediaQuery.of(context).size.width ,
                 // height: MediaQuery.of(context).size.height,
               ): Container(
