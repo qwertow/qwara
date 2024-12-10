@@ -134,7 +134,44 @@ class _DownloadPageState extends State<DownloadPage> {
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                   subtitle: Text(formatMilliseconds(task.timeCreated)),
-                  trailing: task.status.index==3?IconButton(
+                  // trailing: task.status.index==3?IconButton(
+                  //   icon: const Icon(Icons.delete),
+                  //   onPressed: () {
+                  //     Get.dialog(AlertDialog(
+                  //       title: const Text('确认删除'),
+                  //       content: Text('确认删除${task.filename}?'),
+                  //       actions: [
+                  //         TextButton(
+                  //           child: const Text('取消'),
+                  //           onPressed: () {
+                  //             Get.back();
+                  //           },
+                  //         ),
+                  //         TextButton(
+                  //           child: const Text('确认'),
+                  //           onPressed: () async {
+                  //             await storeController.removeDownloadTask("${task.savedDir}/${task.filename}",task.taskId);
+                  //             setState(() {
+                  //               _getDV();
+                  //             });
+                  //             Get.back();
+                  //           },
+                  //         ),
+                  //       ],
+                  //     ));
+                  //   },
+                  // )
+                  //     : IconButton(
+                  //   icon: const Icon(Icons.refresh),
+                  //   onPressed: () async {
+                  //     FlutterDownloader.retry(taskId: task.taskId);
+                  //     await storeController.removeDownloadTask("${task.savedDir}/${task.filename}",task.taskId);
+                  //     setState(() {
+                  //       _getDV();
+                  //     });
+                  //   },
+                  // )
+                  trailing: IconButton(
                     icon: const Icon(Icons.delete),
                     onPressed: () {
                       Get.dialog(AlertDialog(
@@ -160,17 +197,7 @@ class _DownloadPageState extends State<DownloadPage> {
                         ],
                       ));
                     },
-                  )
-                      : IconButton(
-                    icon: const Icon(Icons.refresh),
-                    onPressed: () async {
-                      FlutterDownloader.retry(taskId: task.taskId);
-                      await storeController.removeDownloadTask("${task.savedDir}/${task.filename}",task.taskId);
-                      setState(() {
-                        _getDV();
-                      });
-                    },
-                  )
+                  ),
                 ),
                 Text('  ${task.savedDir}/${task.filename}'),
               ],
