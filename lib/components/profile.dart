@@ -204,7 +204,7 @@ class _ProfileState extends State<Profile> with AutomaticKeepAliveClientMixin{
                     ),
                     subtitle: Row(
                       children: [
-                        Text(formatDate(_Info['updatedAt'] ?? '1970-01-01 00:00:00')),
+                        Text(formatDate(_Info['createdAt'] ?? '1970-01-01 00:00:00')),
                         const Spacer(),
                         Row(
                           children: [
