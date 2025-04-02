@@ -82,7 +82,7 @@ Future<Map> getFavoritesVideos(int page)async {
   final response=await dio.get(
       '/favorites/videos',
       queryParameters: {
-        'page': page-1,
+        'page': page,
       }
   );
   return response.data;
