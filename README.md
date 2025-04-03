@@ -11,6 +11,7 @@ My first attempt at creating an app using Flutter
 ## 可能的问题
 
 下载失败，通常是因为网络原因，重新下载并没有实现，建议出现问题时复制链接浏览器下载。
+
 跳转时视频暂停逻辑有问题，当然目前还没有要改进的想法。
 
 ## About IOS
