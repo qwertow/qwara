@@ -1,6 +1,6 @@
 # qwara
 
-第一次尝试用Flutter制作的app
+第一次尝试用Flutter制作的iwara安卓app
 
 对 https://github.com/re-ovo/awara 拙劣的模仿
 
